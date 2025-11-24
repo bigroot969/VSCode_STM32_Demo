@@ -32,6 +32,10 @@ int Menu3_SetMaxRecord(void);
 
 int Menu3_StopWatch(void);
 
+int Menu3_ShowGraph(void);
+
+void DrawStorageChart(uint8_t chartType, int16_t offset, uint8_t totalRecords);
+
 int Menu4_Erase(void);
 
 int Menu4_ToggleSave(void);

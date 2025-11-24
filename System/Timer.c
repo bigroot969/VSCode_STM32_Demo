@@ -42,14 +42,7 @@ void Timer_Init(void)
 	TIM_ClearFlag(TIM4, TIM_FLAG_Update);
 	TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);
 
-	/*NVIC中断分组*/
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); // 配置NVIC为分组2
-													// 即抢占优先级范围：0~3，响应优先级范围：0~3
-													// 此分组配置在整个工程中仅需调用一次
-													// 若有多个中断，可以把此代码放在main函数内，while循环之前
-													// 若调用多次配置分组的代码，则后执行的配置会覆盖先执行的配置
-
-	/*NVIC配置*/
+	/*NVIC配置(注意：NVIC分组应在main函数中统一配置)*/
 	NVIC_InitTypeDef NVIC2_InitStructure;					   // 定义结构体变量
 	NVIC2_InitStructure.NVIC_IRQChannel = TIM2_IRQn;		   // 选择配置NVIC的TIM2线
 	NVIC2_InitStructure.NVIC_IRQChannelCmd = ENABLE;		   // 指定NVIC线路使能
