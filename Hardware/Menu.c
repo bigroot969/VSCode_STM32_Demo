@@ -23,7 +23,7 @@ uint8_t hour, minute, second;
 uint8_t Flag = 1;
 uint8_t StepLength = 5;
 uint16_t LightValue = 400;
-uint8_t TempValue = 35;
+int TempValue = 35;
 uint8_t ToggleSaveFlag = 0;
 uint8_t NowTotalRecords;
 uint8_t ShowRecordID = 0;
@@ -345,6 +345,7 @@ int Menu2_Setting(void)
 			LCD_ShowNum(72, 100, StepLength, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 			LCD_ShowNum(72, 60, LightValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 			LCD_ShowNum(72, 80, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+			LCD_ShowChinese(0, 0, "设置", LCD_16X16, BLACK, WHITE, 1);
 			break;
 		}
 		case 2:
@@ -357,6 +358,7 @@ int Menu2_Setting(void)
 			LCD_ShowNum(72, 100, StepLength, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 			LCD_ShowNum(72, 60, LightValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 			LCD_ShowNum(72, 80, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+			LCD_ShowChinese(0, 0, "设置", LCD_16X16, BLACK, WHITE, 1);
 			break;
 		}
 		case 3:
@@ -369,6 +371,7 @@ int Menu2_Setting(void)
 			LCD_ShowNum(72, 100, StepLength, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 			LCD_ShowNum(72, 60, LightValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 			LCD_ShowNum(72, 80, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+			LCD_ShowChinese(0, 0, "设置", LCD_16X16, BLACK, WHITE, 1);
 			break;
 		}
 		case 4:
@@ -381,6 +384,7 @@ int Menu2_Setting(void)
 			LCD_ShowNum(72, 100, StepLength, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 			LCD_ShowNum(72, 60, LightValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 			LCD_ShowNum(72, 80, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+			LCD_ShowChinese(0, 0, "设置", LCD_16X16, BLACK, WHITE, 1);
 			break;
 		}
 		case 5:
@@ -393,6 +397,7 @@ int Menu2_Setting(void)
 			LCD_ShowNum(72, 100, StepLength, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 			LCD_ShowNum(72, 60, LightValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 			LCD_ShowNum(72, 80, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+			LCD_ShowChinese(0, 0, "设置", LCD_16X16, BLACK, WHITE, 1);
 			break;
 		}
 		}
@@ -759,8 +764,8 @@ int Menu2_History(void)
 	LCD_ShowChinese(0, 80, "擦除数据", LCD_16X16, BLACK, WHITE, 0);
 	LCD_ShowChinese(0, 100, "最大记录数", LCD_16X16, BLACK, WHITE, 0);
 	LCD_ShowChinese(0, 120, "当前记录数", LCD_16X16, BLACK, WHITE, 0);
-	LCD_ShowNum(96, 100, MaxRecordCount, LCD_8X16, BLACK, WHITE, 0, 0, 0);
-	LCD_ShowNum(96, 120, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+	LCD_ShowNum(96, 100, MaxRecordCount, LCD_8X16, BLACK, WHITE, 0, 1, 3);
+	LCD_ShowNum(96, 120, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 1, 3);
 
 	while (1)
 	{
@@ -785,7 +790,7 @@ int Menu2_History(void)
 			}
 			// 更新当前记录数显示
 			NowTotalRecords = DataStorage_GetCount();
-			LCD_ShowNum(96, 120, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+			LCD_ShowNum(96, 120, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 1, 3);
 		}
 
 		// 持续显示存储状态
@@ -853,8 +858,8 @@ int Menu2_History(void)
 			LCD_ShowChinese(0, 100, "最大记录数", LCD_16X16, BLACK, WHITE, 0);
 			LCD_ShowChinese(0, 120, "当前记录数", LCD_16X16, BLACK, WHITE, 0);
 			LCD_ShowChinese(0, 0, "历史数据", LCD_16X16, BLACK, WHITE, 1);
-			LCD_ShowNum(96, 100, MaxRecordCount, LCD_8X16, BLACK, WHITE, 0, 0, 0);
-			LCD_ShowNum(96, 120, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+			LCD_ShowNum(96, 100, MaxRecordCount, LCD_8X16, BLACK, WHITE, 0, 1, 3);
+			LCD_ShowNum(96, 120, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 1, 3);
 			break;
 		}
 		case 2:
@@ -866,8 +871,8 @@ int Menu2_History(void)
 			LCD_ShowChinese(0, 100, "最大记录数", LCD_16X16, BLACK, WHITE, 0);
 			LCD_ShowChinese(0, 120, "当前记录数", LCD_16X16, BLACK, WHITE, 0);
 			LCD_ShowChinese(0, 0, "历史数据", LCD_16X16, BLACK, WHITE, 1);
-			LCD_ShowNum(96, 100, MaxRecordCount, LCD_8X16, BLACK, WHITE, 0, 0, 0);
-			LCD_ShowNum(96, 120, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+			LCD_ShowNum(96, 100, MaxRecordCount, LCD_8X16, BLACK, WHITE, 0, 1, 3);
+			LCD_ShowNum(96, 120, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 1, 3);
 			break;
 		}
 		case 3:
@@ -879,8 +884,8 @@ int Menu2_History(void)
 			LCD_ShowChinese(0, 100, "最大记录数", LCD_16X16, BLACK, WHITE, 0);
 			LCD_ShowChinese(0, 120, "当前记录数", LCD_16X16, BLACK, WHITE, 0);
 			LCD_ShowChinese(0, 0, "历史数据", LCD_16X16, BLACK, WHITE, 1);
-			LCD_ShowNum(96, 100, MaxRecordCount, LCD_8X16, BLACK, WHITE, 0, 0, 0);
-			LCD_ShowNum(96, 120, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+			LCD_ShowNum(96, 100, MaxRecordCount, LCD_8X16, BLACK, WHITE, 0, 1, 3);
+			LCD_ShowNum(96, 120, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 1, 3);
 			break;
 		}
 		case 4:
@@ -892,8 +897,8 @@ int Menu2_History(void)
 			LCD_ShowChinese(0, 100, "最大记录数", LCD_16X16, BLACK, WHITE, 0);
 			LCD_ShowChinese(0, 120, "当前记录数", LCD_16X16, BLACK, WHITE, 0);
 			LCD_ShowChinese(0, 0, "历史数据", LCD_16X16, BLACK, WHITE, 1);
-			LCD_ShowNum(96, 100, MaxRecordCount, LCD_8X16, BLACK, WHITE, 0, 0, 0);
-			LCD_ShowNum(96, 120, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+			LCD_ShowNum(96, 100, MaxRecordCount, LCD_8X16, BLACK, WHITE, 0, 1, 3);
+			LCD_ShowNum(96, 120, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 1, 3);
 			break;
 		}
 		case 5:
@@ -905,8 +910,8 @@ int Menu2_History(void)
 			LCD_ShowChinese(0, 100, "最大记录数", LCD_16X16, WHITE, BLACK, 0);
 			LCD_ShowChinese(0, 120, "当前记录数", LCD_16X16, BLACK, WHITE, 0);
 			LCD_ShowChinese(0, 0, "历史数据", LCD_16X16, BLACK, WHITE, 1);
-			LCD_ShowNum(96, 100, MaxRecordCount, LCD_8X16, BLACK, WHITE, 0, 0, 0);
-			LCD_ShowNum(96, 120, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+			LCD_ShowNum(96, 100, MaxRecordCount, LCD_8X16, BLACK, WHITE, 0, 1, 3);
+			LCD_ShowNum(96, 120, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 1, 3);
 			break;
 		}
 		}
@@ -919,6 +924,7 @@ int Menu3_SetDate(void)
 	uint8_t SwitchDateFlag = 1;
 	LCD_ShowChinese(0, 40, "日期", LCD_16X16, BLACK, WHITE, 0);
 	LCD_ShowChinese(0, 60, "时间", LCD_16X16, BLACK, WHITE, 0);
+	LCD_ShowChinese(0, 0, "设置", LCD_16X16, BLACK, WHITE, 1);
 	// 显示日期时间，当前设置项高亮或闪烁
 	LCD_ShowNum(40, 40, MyRTC_Time[0], LCD_8X16, BLACK, WHITE, 0, 0, 4);  // 年
 	LCD_ShowNum(80, 40, MyRTC_Time[1], LCD_8X16, BLACK, WHITE, 0, 1, 2);  // 月
@@ -1069,6 +1075,7 @@ int Menu3_SetDate(void)
 		else if (Key_Check(KEY_3, KEY_LONG))
 		{
 			LCD_Clear(WHITE);
+			LCD_ShowChinese(0, 0, "设置", LCD_16X16, BLACK, WHITE, 1);
 			MyRTC_SetTime();
 			return 0;
 		}
@@ -1083,7 +1090,7 @@ int Menu3_SetDate(void)
 		switch (DateFlag)
 		{
 		case 1:																	  // 设置年份
-			LCD_ShowNum(40, 40, MyRTC_Time[0], LCD_8X16, BLACK, WHITE, 0, 0, 4);  // 年
+			LCD_ShowNum(40, 40, MyRTC_Time[0], LCD_8X16, WHITE, BLACK, 0, 0, 4);  // 年
 			LCD_ShowNum(80, 40, MyRTC_Time[1], LCD_8X16, BLACK, WHITE, 0, 1, 2);  // 月
 			LCD_ShowNum(104, 40, MyRTC_Time[2], LCD_8X16, BLACK, WHITE, 0, 1, 2); // 日
 			LCD_ShowNum(48, 60, MyRTC_Time[3], LCD_8X16, BLACK, WHITE, 0, 1, 2);  // 时
@@ -1142,7 +1149,7 @@ int Menu3_SetDate(void)
 int Menu3_SetLight(void)
 {
 	static uint16_t LastLightValue = 0xFFFF;
-	LCD_ShowChinese(0, 0, "设置", LCD_16X16, BLACK, WHITE, 0);
+	LCD_ShowChinese(0, 0, "设置", LCD_16X16, BLACK, WHITE, 1);
 	LCD_ShowString(0, 20, "<---", LCD_8X16, BLACK, WHITE, 0);
 	LCD_ShowChinese(0, 40, "日期时间", LCD_16X16, BLACK, WHITE, 0);
 	LCD_ShowChinese(0, 60, "光照阈值", LCD_16X16, BLACK, WHITE, 0);
@@ -1159,17 +1166,17 @@ int Menu3_SetLight(void)
 		if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
 		{
 			LightValue = LightValue - StepLength;
-			if (LightValue <= 1)
+			if (LightValue <= 0)
 			{
-				LightValue = 400;
+				LightValue = 999;
 			}
 		}
 		if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
 		{
 			LightValue = LightValue + StepLength;
-			if (LightValue >= 400)
+			if (LightValue >= 999)
 			{
-				LightValue = 1;
+				LightValue = 0;
 			}
 		}
 		if (Key_Check(KEY_3, KEY_SINGLE))
@@ -1190,8 +1197,8 @@ int Menu3_SetLight(void)
 
 int Menu3_SetTemp(void)
 {
-	static uint8_t LastTempValue = 0xFF;
-	LCD_ShowChinese(0, 0, "设置", LCD_16X16, BLACK, WHITE, 0);
+	static int LastTempValue = 0xFF;
+	LCD_ShowChinese(0, 0, "设置", LCD_16X16, BLACK, WHITE, 1);
 	LCD_ShowString(0, 20, "<---", LCD_8X16, BLACK, WHITE, 0);
 	LCD_ShowChinese(0, 40, "日期时间", LCD_16X16, BLACK, WHITE, 0);
 	LCD_ShowChinese(0, 60, "光照阈值", LCD_16X16, BLACK, WHITE, 0);
@@ -1208,17 +1215,17 @@ int Menu3_SetTemp(void)
 		if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
 		{
 			TempValue = TempValue - StepLength;
-			if (TempValue <= 1)
+			if (TempValue <= -40)
 			{
-				TempValue = 50;
+				TempValue = 115;
 			}
 		}
 		if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
 		{
 			TempValue = TempValue + StepLength;
-			if (TempValue >= 50)
+			if (TempValue >= 115)
 			{
-				TempValue = 1;
+				TempValue = -40;
 			}
 		}
 		if (Key_Check(KEY_3, KEY_SINGLE))
@@ -1240,7 +1247,7 @@ int Menu3_SetTemp(void)
 int Menu3_SetLength(void)
 {
 	static uint8_t LastStepLength = 0xFF;
-	LCD_ShowChinese(0, 0, "设置", LCD_16X16, BLACK, WHITE, 0);
+	LCD_ShowChinese(0, 0, "设置", LCD_16X16, BLACK, WHITE, 1);
 	LCD_ShowString(0, 20, "<---", LCD_8X16, BLACK, WHITE, 0);
 	LCD_ShowChinese(0, 40, "日期时间", LCD_16X16, BLACK, WHITE, 0);
 	LCD_ShowChinese(0, 60, "光照阈值", LCD_16X16, BLACK, WHITE, 0);
@@ -1259,15 +1266,15 @@ int Menu3_SetLength(void)
 			StepLength--;
 			if (StepLength == 0)
 			{
-				StepLength = 40;
+				StepLength = 100;
 			}
 		}
 		if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
 		{
 			StepLength++;
-			if (StepLength == 41)
+			if (StepLength == 101)
 			{
-				StepLength = 1;
+				StepLength = 0;
 			}
 		}
 		if (Key_Check(KEY_3, KEY_SINGLE))
@@ -1591,16 +1598,8 @@ int Menu3_SetMaxRecord(void)
 		LCD_ShowChinese(0, 100, "最大记录数", LCD_16X16, BLACK, WHITE, 0);
 		LCD_ShowChinese(0, 120, "当前记录数", LCD_16X16, BLACK, WHITE, 0);
 		LCD_ShowNum(96, 100, tempMax, LCD_8X16, BLACK, WHITE, 0, 0, 0);
-		LCD_ShowNum(96, 120, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 0, 0);
-		LCD_ShowString(80, 100, ">", LCD_8X16, BLACK, WHITE, 0);
-		if (ToggleSaveFlag == 0)
-		{
-			LCD_ShowChinese(80, 40, "关", LCD_16X16, BLACK, WHITE, 0);
-		}
-		else
-		{
-			LCD_ShowChinese(80, 40, "开", LCD_16X16, BLACK, WHITE, 0);
-		}
+		LCD_ShowNum(96, 120, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 1, 3);
+		LCD_ShowString(80, 100, ">", LCD_8X16, WHITE, BLACK, 0);
 	}
 }
 
