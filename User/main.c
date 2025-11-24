@@ -23,9 +23,6 @@ extern DateTime CurrentTime;
 
 int main()
 {
-	// 系统配置(必须在所有中断初始化之前)
-	NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2); // 配置NVIC中断优先级分组
-
 	// 基础外设初始化
 	LCD_Init(); // LCD初始化(包含SPI1初始化)
 
@@ -38,7 +35,7 @@ int main()
 	LDR_Init();		// 光照传感器初始化(包含ADC初始化)
 
 	// 时间和存储初始化
-	MyRTC_Init(); // RTC初始化
+	MyRTC_Init();		// RTC初始化
 	DataStorage_Init(); // 数据存储初始化(包含W25Q64和SPI2初始化)
 
 	// 定时器初始化(放在最后,因为会立即启动中断)

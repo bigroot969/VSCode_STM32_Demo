@@ -53,10 +53,10 @@ void LCD_ShowImage(uint16_t X, uint16_t Y, uint16_t Width, uint16_t Height, cons
 void LCD_ShowChar(uint16_t X, uint16_t Y, uint8_t Ch, uint8_t FontSize, uint16_t FColor, uint16_t BColor);                                      // 显示单字符
 void LCD_ShowString(uint16_t X, uint16_t Y, const char *Str, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center);           // 显示字符串（Center=1 居中）
 void LCD_ShowNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center, uint8_t LeadingZero, uint8_t Digits);  // 显示无符号整数（Center=1 居中，LeadingZero=1 前导零，Digits 显示位数）
-void LCD_ShowSignedNum(uint16_t X, uint16_t Y, int32_t Num, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center);            // 显示有符号整数（Center=1 居中）
-void LCD_ShowHexNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center);              // 显示十六进制数（Center=1 居中）
-void LCD_ShowBinNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center);              // 显示二进制数（Center=1 居中）
-void LCD_ShowFloatNum(uint16_t X, uint16_t Y, double Num, uint8_t Decimals, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center); // 显示浮点数（Center=1 居中）
+void LCD_ShowSignedNum(uint16_t X, uint16_t Y, int32_t Num, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center, uint8_t LeadingZero, uint8_t Digits);            // 显示有符号整数（Center=1 居中，LeadingZero=1 前导零，Digits 显示位数）
+void LCD_ShowHexNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center, uint8_t LeadingZero, uint8_t Digits);              // 显示十六进制数（Center=1 居中，LeadingZero=1 前导零，Digits 显示位数不含0x）
+void LCD_ShowBinNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center, uint8_t LeadingZero, uint8_t Digits);              // 显示二进制数（Center=1 居中，LeadingZero=1 前导零，Digits 显示位数不含0b）
+void LCD_ShowFloatNum(uint16_t X, uint16_t Y, double Num, uint8_t Decimals, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center, uint8_t FixedWidth); // 显示浮点数（Center=1 居中，FixedWidth=固定字符宽度，0=自动）
 void LCD_ShowChinese(uint16_t X, uint16_t Y, const char *Chinese, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center);      // 显示汉字（Center=1 居中）
 
 #endif

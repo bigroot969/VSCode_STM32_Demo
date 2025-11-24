@@ -861,39 +861,86 @@ static void LCD_ShowChinese_Center_Internal(uint16_t Y, const char *Chinese, uin
  * @param BColor 背景颜色
  * @param Center 1=水平居中显示，0=从 X,Y 开始显示
  */
-void LCD_ShowSignedNum(uint16_t X, uint16_t Y, int32_t Num, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center)
+void LCD_ShowSignedNum(uint16_t X, uint16_t Y, int32_t Num, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center, uint8_t LeadingZero, uint8_t Digits)
 {
-    char buffer[12];
-    char *p = buffer + 11;
-    *p = '\0';
-
-    uint32_t AbsNum;
+    char buffer[13];
+    uint8_t i = 0;
+    uint8_t isNegative = 0;
+    
     if (Num < 0)
     {
-        AbsNum = -Num;
+        isNegative = 1;
+        Num = -Num;
+    }
+    
+    // 如果指定了显示位数
+    if (Digits > 0 && Digits <= 10)
+    {
+        char temp[11];
+        uint8_t j = 0;
+        uint32_t num_copy = Num;
+        
+        if (num_copy == 0)
+        {
+            temp[j++] = '0';
+        }
+        else
+        {
+            while (num_copy > 0 && j < Digits)
+            {
+                temp[j++] = '0' + (num_copy % 10);
+                num_copy /= 10;
+            }
+        }
+        
+        // 如果需要前导零，补齐位数
+        if (LeadingZero)
+        {
+            while (j < Digits)
+            {
+                temp[j++] = '0';
+            }
+        }
+        
+        // 添加负号
+        if (isNegative)
+        {
+            buffer[i++] = '-';
+        }
+        
+        // 反转数字到buffer
+        for (uint8_t k = 0; k < j; k++)
+        {
+            buffer[i++] = temp[j - 1 - k];
+        }
+        buffer[i] = '\0';
+        
+        LCD_ShowString(X, Y, buffer, FontSize, FColor, BColor, Center);
+        return;
+    }
+    
+    // 原有逻辑：不指定位数时
+    char *p = buffer + 12;
+    *p = '\0';
+    
+    if (Num == 0)
+    {
+        *(--p) = '0';
     }
     else
     {
-        AbsNum = Num;
+        while (Num > 0)
+        {
+            *(--p) = '0' + (Num % 10);
+            Num /= 10;
+        }
     }
-
-    if (AbsNum == 0)
-    {
-        LCD_ShowString(X, Y, "0", FontSize, FColor, BColor, Center);
-        return;
-    }
-
-    while (AbsNum > 0)
-    {
-        *(--p) = '0' + (AbsNum % 10);
-        AbsNum /= 10;
-    }
-
-    if (Num < 0)
+    
+    if (isNegative)
     {
         *(--p) = '-';
     }
-
+    
     LCD_ShowString(X, Y, p, FontSize, FColor, BColor, Center);
 }
 
@@ -909,28 +956,75 @@ void LCD_ShowSignedNum(uint16_t X, uint16_t Y, int32_t Num, uint8_t FontSize, ui
  * @param BColor 背景颜色
  * @param Center 1=水平居中显示，0=从 X,Y 开始显示
  */
-void LCD_ShowHexNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center)
+void LCD_ShowHexNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center, uint8_t LeadingZero, uint8_t Digits)
 {
-    char buffer[11];
+    char buffer[13];
     char HexTable[] = "0123456789ABCDEF";
-    char *p = buffer + 10;
-    *p = '\0';
-
-    if (Num == 0)
+    
+    // 如果指定了显示位数
+    if (Digits > 0 && Digits <= 8)
     {
-        LCD_ShowString(X, Y, "0x0", FontSize, FColor, BColor, Center);
+        buffer[0] = '0';
+        buffer[1] = 'x';
+        uint8_t i = 2;
+        
+        char temp[9];
+        uint8_t j = 0;
+        uint32_t num_copy = Num;
+        
+        if (num_copy == 0)
+        {
+            temp[j++] = '0';
+        }
+        else
+        {
+            while (num_copy > 0 && j < Digits)
+            {
+                temp[j++] = HexTable[num_copy & 0x0F];
+                num_copy >>= 4;
+            }
+        }
+        
+        // 如果需要前导零，补齐位数
+        if (LeadingZero)
+        {
+            while (j < Digits)
+            {
+                temp[j++] = '0';
+            }
+        }
+        
+        // 反转到buffer
+        for (uint8_t k = 0; k < j; k++)
+        {
+            buffer[i++] = temp[j - 1 - k];
+        }
+        buffer[i] = '\0';
+        
+        LCD_ShowString(X, Y, buffer, FontSize, FColor, BColor, Center);
         return;
     }
-
-    while (Num > 0)
+    
+    // 原有逻辑：不指定位数时
+    char *p = buffer + 12;
+    *p = '\0';
+    
+    if (Num == 0)
     {
-        *(--p) = HexTable[Num & 0x0F];
-        Num >>= 4;
+        *(--p) = '0';
     }
-
+    else
+    {
+        while (Num > 0)
+        {
+            *(--p) = HexTable[Num & 0x0F];
+            Num >>= 4;
+        }
+    }
+    
     *(--p) = 'x';
     *(--p) = '0';
-
+    
     LCD_ShowString(X, Y, p, FontSize, FColor, BColor, Center);
 }
 
@@ -946,27 +1040,74 @@ void LCD_ShowHexNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint
  * @param BColor 背景颜色
  * @param Center 1=水平居中显示，0=从 X,Y 开始显示
  */
-void LCD_ShowBinNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center)
+void LCD_ShowBinNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center, uint8_t LeadingZero, uint8_t Digits)
 {
-    char buffer[34];
-    char *p = buffer + 33;
-    *p = '\0';
-
-    if (Num == 0)
+    char buffer[35];
+    
+    // 如果指定了显示位数
+    if (Digits > 0 && Digits <= 32)
     {
-        LCD_ShowString(X, Y, "0b0", FontSize, FColor, BColor, Center);
+        buffer[0] = '0';
+        buffer[1] = 'b';
+        uint8_t i = 2;
+        
+        char temp[33];
+        uint8_t j = 0;
+        uint32_t num_copy = Num;
+        
+        if (num_copy == 0)
+        {
+            temp[j++] = '0';
+        }
+        else
+        {
+            while (num_copy > 0 && j < Digits)
+            {
+                temp[j++] = '0' + (num_copy & 1);
+                num_copy >>= 1;
+            }
+        }
+        
+        // 如果需要前导零，补齐位数
+        if (LeadingZero)
+        {
+            while (j < Digits)
+            {
+                temp[j++] = '0';
+            }
+        }
+        
+        // 反转到buffer
+        for (uint8_t k = 0; k < j; k++)
+        {
+            buffer[i++] = temp[j - 1 - k];
+        }
+        buffer[i] = '\0';
+        
+        LCD_ShowString(X, Y, buffer, FontSize, FColor, BColor, Center);
         return;
     }
-
-    while (Num > 0)
+    
+    // 原有逻辑：不指定位数时
+    char *p = buffer + 34;
+    *p = '\0';
+    
+    if (Num == 0)
     {
-        *(--p) = '0' + (Num & 1);
-        Num >>= 1;
+        *(--p) = '0';
     }
-
+    else
+    {
+        while (Num > 0)
+        {
+            *(--p) = '0' + (Num & 1);
+            Num >>= 1;
+        }
+    }
+    
     *(--p) = 'b';
     *(--p) = '0';
-
+    
     LCD_ShowString(X, Y, p, FontSize, FColor, BColor, Center);
 }
 
@@ -982,8 +1123,9 @@ void LCD_ShowBinNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint
  * @param FColor 字体颜色
  * @param BColor 背景颜色
  * @param Center 1=水平居中显示，0=从 X,Y 开始显示
+ * @param FixedWidth 固定字符宽度（0=自动宽度，>0=指定宽度用背景色填充）
  */
-void LCD_ShowFloatNum(uint16_t X, uint16_t Y, double Num, uint8_t Decimals, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center)
+void LCD_ShowFloatNum(uint16_t X, uint16_t Y, double Num, uint8_t Decimals, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center, uint8_t FixedWidth)
 {
     char buffer[32];
     char *p = buffer;
@@ -1041,6 +1183,14 @@ void LCD_ShowFloatNum(uint16_t X, uint16_t Y, double Num, uint8_t Decimals, uint
     }
 
     *p = '\0';
+
+    // 如果指定了固定宽度，先清除足够宽的区域
+    if (FixedWidth > 0 && !Center)
+    {
+        uint16_t clearWidth = FixedWidth * FontSize;
+        uint16_t clearHeight = (FontSize == LCD_6X8) ? 8 : 16;
+        LCD_DrawRectangle_Fill(X, Y, X + clearWidth - 1, Y + clearHeight - 1, BColor);
+    }
 
     LCD_ShowString(X, Y, buffer, FontSize, FColor, BColor, Center);
 }

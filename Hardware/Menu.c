@@ -30,7 +30,7 @@ uint8_t ShowRecordID = 0;
 float Temp = 0;
 uint16_t Light = 0;
 volatile uint8_t SaveFlag = 0;
-volatile uint16_t TimerCount = 0;
+volatile int TimerCount = 0;
 
 int Menu1(void) // 一级菜单
 {
@@ -210,9 +210,8 @@ int Menu2_Stats(void) // 二级菜单
 		// 显示数值（使用当前状态的颜色）
 		uint16_t displayColor = CurrentAlarmState ? RED : BLACK;
 		LCD_ShowNum(88, 80, Light, LCD_8X16, displayColor, WHITE, 0, 1, 3);
-		// 清除温度显示区域，防止字符残留
-		LCD_DrawRectangle_Fill(72, 100, 120, 115, WHITE);
-		LCD_ShowFloatNum(72, 100, Temp, 1, LCD_8X16, displayColor, WHITE, 0);
+		// 温度显示，FixedWidth=6可容纳"-99.9"格式
+		LCD_ShowFloatNum(72, 100, Temp, 1, LCD_8X16, displayColor, WHITE, 0, 6);
 
 		// 报警逻辑处理
 		if (CurrentAlarmState)
@@ -490,6 +489,7 @@ int Menu2_Function(void)
 			LCD_ShowString(0, 20, "<---", LCD_8X16, WHITE, BLACK, 0);
 			LCD_ShowChinese(0, 40, "音乐播放", LCD_16X16, BLACK, WHITE, 0);
 			LCD_ShowChinese(0, 60, "秒表", LCD_16X16, BLACK, WHITE, 0);
+			LCD_ShowChinese(0, 0, "功能", LCD_16X16, BLACK, WHITE, 1);
 			break;
 		}
 		case 2:
@@ -497,6 +497,7 @@ int Menu2_Function(void)
 			LCD_ShowString(0, 20, "<---", LCD_8X16, BLACK, WHITE, 0);
 			LCD_ShowChinese(0, 40, "音乐播放", LCD_16X16, WHITE, BLACK, 0);
 			LCD_ShowChinese(0, 60, "秒表", LCD_16X16, BLACK, WHITE, 0);
+			LCD_ShowChinese(0, 0, "功能", LCD_16X16, BLACK, WHITE, 1);
 			break;
 		}
 		case 3:
@@ -504,6 +505,7 @@ int Menu2_Function(void)
 			LCD_ShowString(0, 20, "<---", LCD_8X16, BLACK, WHITE, 0);
 			LCD_ShowChinese(0, 40, "音乐播放", LCD_16X16, BLACK, WHITE, 0);
 			LCD_ShowChinese(0, 60, "秒表", LCD_16X16, WHITE, BLACK, 0);
+			LCD_ShowChinese(0, 0, "功能", LCD_16X16, BLACK, WHITE, 1);
 			break;
 		} /*
 		 case 4:
@@ -921,10 +923,15 @@ int Menu2_History(void)
 int Menu3_SetDate(void)
 {
 	uint8_t DateFlag = 1;
-	uint8_t SwitchDateFlag = 1;
+	uint8_t SwitchDateFlag = 0;  // 初始为0（切换模式）
 	LCD_ShowChinese(0, 40, "日期", LCD_16X16, BLACK, WHITE, 0);
 	LCD_ShowChinese(0, 60, "时间", LCD_16X16, BLACK, WHITE, 0);
 	LCD_ShowChinese(0, 0, "设置", LCD_16X16, BLACK, WHITE, 1);
+	// 显示日期时间分隔符
+	LCD_ShowString(72, 40, "-", LCD_8X16, BLACK, WHITE, 0);
+	LCD_ShowString(96, 40, "-", LCD_8X16, BLACK, WHITE, 0);
+	LCD_ShowString(72, 60, ":", LCD_8X16, BLACK, WHITE, 0);
+	LCD_ShowString(96, 60, ":", LCD_8X16, BLACK, WHITE, 0);
 	// 显示日期时间，当前设置项高亮或闪烁
 	LCD_ShowNum(40, 40, MyRTC_Time[0], LCD_8X16, BLACK, WHITE, 0, 0, 4);  // 年
 	LCD_ShowNum(80, 40, MyRTC_Time[1], LCD_8X16, BLACK, WHITE, 0, 1, 2);  // 月
@@ -934,7 +941,7 @@ int Menu3_SetDate(void)
 	LCD_ShowNum(104, 60, MyRTC_Time[5], LCD_8X16, BLACK, WHITE, 0, 1, 2); // 秒
 	while (1)
 	{
-		if (SwitchDateFlag == 0)
+		if (SwitchDateFlag == 0)  // 切换模式
 		{
 			if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
 			{
@@ -944,7 +951,7 @@ int Menu3_SetDate(void)
 					DateFlag = 6;
 				}
 			}
-			if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+			else if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
 			{
 				DateFlag++;
 				if (DateFlag == 7)
@@ -953,113 +960,139 @@ int Menu3_SetDate(void)
 				}
 			}
 		}
-		if (SwitchDateFlag == 1)
+		else if (SwitchDateFlag == 1)  // 调整模式
 		{
-			if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
+			if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))  // KEY_1：减少
 			{
 				switch (DateFlag)
 				{
-				case 1:
+				case 1:  // 年份
 				{
-					MyRTC_Time[0]--;
+					if (MyRTC_Time[0] <= 2000)
+					{
+						MyRTC_Time[0] = 2099;
+					}
+					else
+					{
+						MyRTC_Time[0]--;
+					}
 					break;
 				}
-				case 2:
+				case 2:  // 月份
 				{
-					MyRTC_Time[1]--;
-					if (MyRTC_Time[1] < 1)
+					if (MyRTC_Time[1] <= 1)
 					{
 						MyRTC_Time[1] = 12;
 					}
+					else
+					{
+						MyRTC_Time[1]--;
+					}
 					break;
 				}
-				case 3:
+				case 3:  // 日期
 				{
-					MyRTC_Time[2]--;
-					if (MyRTC_Time[2] < 1)
+					if (MyRTC_Time[2] <= 1)
 					{
 						MyRTC_Time[2] = 31;
 					}
+					else
+					{
+						MyRTC_Time[2]--;
+					}
 					break;
 				}
-				case 4:
+				case 4:  // 小时
 				{
-					MyRTC_Time[3]--;
-					if (MyRTC_Time[3] < 0)
+					if (MyRTC_Time[3] == 0)
 					{
 						MyRTC_Time[3] = 23;
 					}
-					break;
-				}
-				case 5:
-				{
-					MyRTC_Time[4]--;
-					if (MyRTC_Time[4] < 0)
+					else
 					{
-						MyRTC_Time[4] = 59;
+						MyRTC_Time[3]--;
 					}
 					break;
 				}
-				case 6:
+				case 5:  // 分钟
 				{
-					MyRTC_Time[5]--;
-					if (MyRTC_Time[5] < 0)
+					if (MyRTC_Time[4] == 0)
+					{
+						MyRTC_Time[4] = 59;
+					}
+					else
+					{
+						MyRTC_Time[4]--;
+					}
+					break;
+				}
+				case 6:  // 秒
+				{
+					if (MyRTC_Time[5] == 0)
 					{
 						MyRTC_Time[5] = 59;
+					}
+					else
+					{
+						MyRTC_Time[5]--;
 					}
 					break;
 				}
 				}
 			}
-			if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+			else if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))  // KEY_2：增加
 			{
 				switch (DateFlag)
 				{
-				case 1:
+				case 1:  // 年份
 				{
 					MyRTC_Time[0]++;
+					if (MyRTC_Time[0] >= 2100)
+					{
+						MyRTC_Time[0] = 2000;
+					}
 					break;
 				}
-				case 2:
+				case 2:  // 月份
 				{
 					MyRTC_Time[1]++;
-					if (MyRTC_Time[1] == 13)
+					if (MyRTC_Time[1] >= 13)
 					{
 						MyRTC_Time[1] = 1;
 					}
 					break;
 				}
-				case 3:
+				case 3:  // 日期  // 日期
 				{
 					MyRTC_Time[2]++;
-					if (MyRTC_Time[2] == 32)
+					if (MyRTC_Time[2] >= 32)
 					{
 						MyRTC_Time[2] = 1;
 					}
 					break;
 				}
-				case 4:
+				case 4:  // 小时  // 小时
 				{
 					MyRTC_Time[3]++;
-					if (MyRTC_Time[3] == 24)
+					if (MyRTC_Time[3] >= 24)
 					{
 						MyRTC_Time[3] = 0;
 					}
 					break;
 				}
-				case 5:
+				case 5:  // 分钟  // 分钟
 				{
 					MyRTC_Time[4]++;
-					if (MyRTC_Time[4] == 60)
+					if (MyRTC_Time[4] >= 60)
 					{
 						MyRTC_Time[4] = 0;
 					}
 					break;
 				}
-				case 6:
+				case 6:  // 秒  // 秒
 				{
 					MyRTC_Time[5]++;
-					if (MyRTC_Time[5] == 60)
+					if (MyRTC_Time[5] >= 60)
 					{
 						MyRTC_Time[5] = 0;
 					}
@@ -1597,7 +1630,7 @@ int Menu3_SetMaxRecord(void)
 		LCD_ShowChinese(0, 80, "擦除数据", LCD_16X16, BLACK, WHITE, 0);
 		LCD_ShowChinese(0, 100, "最大记录数", LCD_16X16, BLACK, WHITE, 0);
 		LCD_ShowChinese(0, 120, "当前记录数", LCD_16X16, BLACK, WHITE, 0);
-		LCD_ShowNum(96, 100, tempMax, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+		LCD_ShowNum(96, 100, tempMax, LCD_8X16, BLACK, WHITE, 0, 1, 3);
 		LCD_ShowNum(96, 120, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 1, 3);
 		LCD_ShowString(80, 100, ">", LCD_8X16, WHITE, BLACK, 0);
 	}
@@ -1608,9 +1641,10 @@ int Menu4_Erase(void)
 	LCD_Clear(WHITE);
 	LCD_ShowChinese(0, 40, "擦除中...", LCD_16X16, RED, WHITE, 1);
 	W25Q64_SectorErase(STORAGE_START_ADDR);
-	DataStorage_ResetCount();
-	DataStorage_Init();
-	NowTotalRecords = DataStorage_GetCount();
+	W25Q64_WaitBusy();			// 确保擦除完成
+	DataStorage_ResetCount();	// 重置内部计数
+	ShowRecordID = 0;			// 重置显示ID
+	NowTotalRecords = 0;		// 重置总记录数
 	Delay_s(3);
 	LCD_Clear(WHITE);
 	return 0;
@@ -1681,6 +1715,7 @@ int Menu3_StopWatch(void)
 		{
 			LastHour = LastMinute = LastSecond = 0xFF;
 			StopWatchStartFlag = 0;
+			LCD_Clear(WHITE);
 			return 0;
 		}
 		if (StopWatchTemp == 2)
@@ -1827,7 +1862,7 @@ int Menu4_SaveInterval(void)
 					SaveIntervalFlag = 3;
 				}
 			}
-			else if (Key_Check(KEY_2, KEY_UP)) // KEY_2：下一项（秒→小时循环）
+			else if (Key_Check(KEY_2, KEY_UP)|| Key_Check(KEY_2, KEY_REPEAT)) // KEY_2：下一项（秒→小时循环）
 			{
 				SaveIntervalFlag++;
 				if (SaveIntervalFlag == 4)
@@ -1844,35 +1879,50 @@ int Menu4_SaveInterval(void)
 				{
 				case 1:
 				{
-					SaveInterval_Time[0]--;
-					if (SaveInterval_Time[0] < 0)
+					if (SaveInterval_Time[0] == 0)
 					{
 						SaveInterval_Time[0] = 23;
+					}
+					else
+					{
+						SaveInterval_Time[0]--;
 					}
 					break;
 				}
 				case 2:
 				{
-					SaveInterval_Time[1]--;
-					if (SaveInterval_Time[1] < 0)
+					if (SaveInterval_Time[1] == 0)
 					{
 						SaveInterval_Time[1] = 59;
+					}
+					else
+					{
+						SaveInterval_Time[1]--;
 					}
 					break;
 				}
 				case 3:
 				{
-					SaveInterval_Time[2]--;
-					if (SaveInterval_Time[2] < 0)
+					if (SaveInterval_Time[2] == 0)
 					{
 						SaveInterval_Time[2] = 59;
+					}
+					else
+					{
+						SaveInterval_Time[2]--;
 					}
 					break;
 				}
 				}
 				SaveInterval = SaveInterval_Time[0] * 3600 + SaveInterval_Time[1] * 60 + SaveInterval_Time[2];
+				// 防止间隔为0，最小1秒
+				if (SaveInterval == 0)
+				{
+					SaveInterval = 1;
+					SaveInterval_Time[2] = 1;
+				}
 			}
-			else if (Key_Check(KEY_2, KEY_UP))
+			else if (Key_Check(KEY_2, KEY_UP)|| Key_Check(KEY_2, KEY_REPEAT)) // KEY_2：增加
 			{
 				switch (SaveIntervalFlag)
 				{
@@ -1905,6 +1955,12 @@ int Menu4_SaveInterval(void)
 				}
 				}
 				SaveInterval = SaveInterval_Time[0] * 3600 + SaveInterval_Time[1] * 60 + SaveInterval_Time[2];
+				// 防止间隔为0，最小1秒
+				if (SaveInterval == 0)
+				{
+					SaveInterval = 1;
+					SaveInterval_Time[2] = 1;
+				}
 			}
 		}
 		if (Key_Check(KEY_3, KEY_SINGLE))
@@ -1916,6 +1972,17 @@ int Menu4_SaveInterval(void)
 			LCD_Clear(WHITE);
 			return 0;
 		}
+		
+		// 显示当前模式
+		if (SwitchFlag == 0)
+		{
+			LCD_ShowChinese(0, 120, "切换", LCD_16X16, BLACK, WHITE, 1);
+		}
+		else
+		{
+			LCD_ShowChinese(0, 120, "调整", LCD_16X16, BLACK, WHITE, 1);
+		}
+		
 		switch (SaveIntervalFlag)
 		{
 		case 1:
@@ -1948,14 +2015,6 @@ int Menu4_SaveInterval(void)
 		{
 			LCD_ShowChinese(80, 40, "开", LCD_16X16, BLACK, WHITE, 0);
 		}
-		if (SwitchFlag == 0)
-		{
-			LCD_ShowChinese(0, 120, "切换", LCD_16X16, BLACK, WHITE, 1);
-		}
-		else
-		{
-			LCD_ShowChinese(0, 120, "调整", LCD_16X16, BLACK, WHITE, 1);
-		}
 	}
 }
 
@@ -1971,24 +2030,16 @@ void LCD_ShowRecord(uint8_t RecordID)
 	DataStorage_Read(RecordID, &record);
 	char IndexStr[20];
 	float temp = record.Temp / 10.0f;
-	sprintf((char *)IndexStr, "%03d/%03d", record.Index, NowTotalRecords);
+	sprintf((char *)IndexStr, "%03d/%03d", RecordID + 1, NowTotalRecords);
 	LCD_ShowString(32, 120, IndexStr, LCD_8X16, BLACK, WHITE, 0);
-	LCD_DrawRectangle_Fill(40, 40, 70, 55, WHITE);
-	LCD_DrawRectangle_Fill(80, 40, 94, 55, WHITE);
-	LCD_DrawRectangle_Fill(104, 40, 118, 55, WHITE);
-	LCD_DrawRectangle_Fill(40, 60, 54, 75, WHITE);
-	LCD_DrawRectangle_Fill(64, 60, 78, 75, WHITE);
-	LCD_DrawRectangle_Fill(88, 60, 102, 75, WHITE);
-	LCD_DrawRectangle_Fill(88, 80, 120, 95, WHITE);
-	LCD_DrawRectangle_Fill(72, 100, 120, 115, WHITE);
-	LCD_ShowNum(40, 40, record.Year, LCD_8X16, BLACK, WHITE, 0, 0, 0);	 // 年
-	LCD_ShowNum(80, 40, record.Month, LCD_8X16, BLACK, WHITE, 0, 0, 0);	 // 月
-	LCD_ShowNum(104, 40, record.Day, LCD_8X16, BLACK, WHITE, 0, 0, 0);	 // 日
-	LCD_ShowNum(40, 60, record.Hour, LCD_8X16, BLACK, WHITE, 0, 0, 0);	 // 时
-	LCD_ShowNum(64, 60, record.Minute, LCD_8X16, BLACK, WHITE, 0, 0, 0); // 分
-	LCD_ShowNum(88, 60, record.Second, LCD_8X16, BLACK, WHITE, 0, 0, 0); // 秒
-	LCD_ShowNum(88, 80, record.Light, LCD_8X16, BLACK, WHITE, 0, 1, 3);
-	LCD_ShowFloatNum(72, 100, temp, 1, LCD_8X16, BLACK, WHITE, 0);
+	LCD_ShowNum(40, 40, record.Year, LCD_8X16, BLACK, WHITE, 0, 1, 4);	 // 年，固定4位
+	LCD_ShowNum(80, 40, record.Month, LCD_8X16, BLACK, WHITE, 0, 1, 2);	 // 月，固定2位
+	LCD_ShowNum(104, 40, record.Day, LCD_8X16, BLACK, WHITE, 0, 1, 2);	 // 日，固定2位
+	LCD_ShowNum(40, 60, record.Hour, LCD_8X16, BLACK, WHITE, 0, 1, 2);	 // 时，固定2位
+	LCD_ShowNum(64, 60, record.Minute, LCD_8X16, BLACK, WHITE, 0, 1, 2); // 分，固定2位
+	LCD_ShowNum(88, 60, record.Second, LCD_8X16, BLACK, WHITE, 0, 1, 2); // 秒，固定2位
+	LCD_ShowNum(88, 80, record.Light, LCD_8X16, BLACK, WHITE, 0, 1, 3);  // 光照，固定3位
+	LCD_ShowFloatNum(72, 100, temp, 1, LCD_8X16, BLACK, WHITE, 0, 6);    // 温度，固定6字符宽度
 
 	LCD_ShowString(72, 40, "-", LCD_8X16, BLACK, WHITE, 0);
 	LCD_ShowString(96, 40, "-", LCD_8X16, BLACK, WHITE, 0);
