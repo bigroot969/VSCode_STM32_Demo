@@ -1,0 +1,12 @@
+Checks: "
+        -*,
+        clang-analyzer-*, 
+        readability-identifier-*,
+        cppcoreguidelines-*,
+        modernize-*,
+        -modernize-use-trailing-return-type,
+        cppcoreguidelines-avoid-magic-numbers,
+        readability-identifier-length
+        "
+# "-" ahead of string means give up that check
+# for example, litter all default checks, and define your own;
