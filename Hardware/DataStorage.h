@@ -27,8 +27,8 @@ typedef struct
 #pragma pack()
 
 // 存储配置
-#define STORAGE_START_ADDR 0x000000 // 存储起始地址
-#define STORAGE_MAX_RECORD_ADDR 0x001000
+#define STORAGE_START_ADDR 0x000000 // 存储起始地址（数据记录区）
+#define STORAGE_MAX_RECORD_ADDR 0x002000 // MaxRecordCount配置地址（第3个扇区，更安全）
 #define RECORD_SIZE sizeof(SensorData) // 单条记录大小（自动计算）
 extern uint8_t MaxRecordCount;
 // 函数声明
