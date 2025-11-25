@@ -7,6 +7,7 @@
 #include "TempSensor.h"
 #include "Buzzer.h"
 #include "DataStorage.h"
+#include "LED.h"
 #include "stdio.h"
 
 #define Music_Count 5
@@ -105,9 +106,11 @@ int Menu2_Stats(void) // 二级菜单
 	uint8_t Menu2_StatsFlag = 0;
 	uint8_t AlarmActiveFlag = 0;
 	uint8_t AlarmCounter = 0;
-	uint8_t LastAlarmState = 0; // 上次报警状态，用于检测状态变化
+	uint8_t LastAlarmState = 0;		 // 上次报警状态，用于检测状态变化
 	uint8_t lastStorageState = 0xFF; // 存储状态缓存
+	uint8_t LEDBlinkCounter = 0;	 // LED闪烁计数器
 	const uint16_t MAX_ALARM_TICKS = 5;
+	const uint8_t LED_BLINK_INTERVAL = 1; // LED闪烁间隔（主循环周期数）
 
 	LCD_Clear(WHITE);
 	LCD_ShowChinese(0, 0, "状态信息", LCD_16X16, BLACK, WHITE, 1);
@@ -126,6 +129,7 @@ int Menu2_Stats(void) // 二级菜单
 		if (Key_Check(KEY_3, KEY_SINGLE))
 		{
 			Buzzer_OFF();
+			LED_OFF(); // 退出菜单时关闭LED
 			Menu2_StatsFlag = StFlag;
 		}
 		if (Menu2_StatsFlag == 1)
@@ -224,8 +228,10 @@ int Menu2_Stats(void) // 二级菜单
 			if (!AlarmActiveFlag)
 			{
 				Buzzer_ON();
+				LED_ON(); // 报警开始时点亮LED
 				AlarmActiveFlag = 1;
 				AlarmCounter = 0;
+				LEDBlinkCounter = 0;
 			}
 			else
 			{
@@ -235,6 +241,14 @@ int Menu2_Stats(void) // 二级菜单
 					Buzzer_OFF();
 					AlarmActiveFlag = 0;
 				}
+
+				// LED持续闪烁（不受蜂鸣器停止影响）
+				LEDBlinkCounter++;
+				if (LEDBlinkCounter >= LED_BLINK_INTERVAL)
+				{
+					LED_Turn(); // 翻转LED状态
+					LEDBlinkCounter = 0;
+				}
 			}
 		}
 		else
@@ -242,8 +256,10 @@ int Menu2_Stats(void) // 二级菜单
 			if (AlarmActiveFlag)
 			{
 				Buzzer_OFF();
+				LED_ON(); // 报警结束时关闭LED
 				AlarmActiveFlag = 0;
 				AlarmCounter = 0;
+				LEDBlinkCounter = 0;
 			}
 		}
 	}
@@ -1900,7 +1916,7 @@ int Menu3_StopWatch(void)
 
 	LCD_Clear(WHITE);
 	LCD_ShowChinese(0, 0, "秒表", LCD_16X16, BLACK, WHITE, 1);
-	LCD_ShowString(0, 20, "<---", LCD_8X16, WHITE, BLACK, 0);  // 初始高亮
+	LCD_ShowString(0, 20, "<---", LCD_8X16, WHITE, BLACK, 0); // 初始高亮
 	LCD_ShowChinese(8, 100, "开始", LCD_16X16, BLACK, WHITE, 0);
 	LCD_ShowChinese(48, 100, "暂停", LCD_16X16, BLACK, WHITE, 0);
 	LCD_ShowChinese(88, 100, "清除", LCD_16X16, BLACK, WHITE, 0);
@@ -2112,7 +2128,7 @@ void DrawStorageChart(uint8_t chartType, int16_t offset, uint8_t totalRecords)
 	if (endRecord > totalRecords)
 		endRecord = totalRecords;
 	sprintf(info, "%d-%d/%d", startRecord, endRecord, totalRecords);
-	LCD_ShowString(64, 20, info, LCD_8X16, BLUE, WHITE, 0);
+	LCD_ShowString(60, 24, info, LCD_6X8, BLUE, WHITE, 0);
 
 	// 计算实际要显示的数据点数
 	uint8_t displayCount = totalRecords - offset;
@@ -2247,16 +2263,16 @@ void DrawStorageChart(uint8_t chartType, int16_t offset, uint8_t totalRecords)
 
 			// 计算坐标（使用更新后的dataRange）
 			int16_t x = 2 + i * pixelStep;
-			int16_t y = 157 - ((int32_t)(value - dataMin) * 105 / dataRange);
+			int16_t y = 149 - ((int32_t)(value - dataMin) * 105 / dataRange);
 
 			// 确保Y坐标在有效范围内
-			if (y < 52)
-				y = 52;
-			if (y > 157)
-				y = 157;
+			if (y < 44)
+				y = 44;
+			if (y > 149)
+				y = 149;
 
 			// 绘制点
-			uint16_t color = (chartType == 0) ? RED : GREEN;
+			uint16_t color = (chartType == 0) ? RED : BLUE;
 			LCD_DrawRectangle_Fill(x - 1, y - 1, x + 1, y + 1, color);
 
 			// 绘制连线
