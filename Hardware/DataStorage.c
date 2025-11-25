@@ -2,7 +2,7 @@
 #include <string.h>
 
 // 内部全局变量（简化设计：只在RAM中维护）
-static uint8_t g_MaxRecordCount = 250;   // 最大记录数（固定250）
+static uint8_t g_MaxRecordCount = 50;   // 最大记录数（固定250）
 static uint8_t g_CurrentRecordCount = 0; // 当前已存储记录数（通过扫描得出）
 
 /**
