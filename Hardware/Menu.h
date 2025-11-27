@@ -1,6 +1,17 @@
 #ifndef __MENU_H
 #define __MENU_H
 #include "stm32f10x.h" // Device header
+#include "LCD.h"
+#include "Key.h"
+#include "Menu.h"
+#include "MyRTC.h"
+#include "LightSensor.h"
+#include "TempSensor.h"
+#include "Buzzer.h"
+#include "DataStorage.h"
+#include "LED.h"
+#include "Encoder.h"
+#include "stdio.h"
 
 int Menu1(void);
 

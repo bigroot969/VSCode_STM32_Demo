@@ -1,14 +1,4 @@
-#include "stm32f10x.h" // Device header
-#include "LCD.h"
-#include "Key.h"
 #include "Menu.h"
-#include "MyRTC.h"
-#include "LightSensor.h"
-#include "TempSensor.h"
-#include "Buzzer.h"
-#include "DataStorage.h"
-#include "LED.h"
-#include "stdio.h"
 
 #define Music_Count 5
 
@@ -41,7 +31,8 @@ int Menu1(void) // 一级菜单
 	LCD_ShowChinese(0, 104, "设置", LCD_16X16, BLACK, WHITE, 1);
 	while (1)
 	{
-		if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
+
+		if (Encoder_Check(ENCODER_CW))
 		{
 			Flag--;
 			if (Flag == 0)
@@ -49,7 +40,7 @@ int Menu1(void) // 一级菜单
 				Flag = 4;
 			}
 		}
-		if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CCW))
 		{
 			Flag++;
 			if (Flag == 5)
@@ -57,7 +48,7 @@ int Menu1(void) // 一级菜单
 				Flag = 1;
 			}
 		}
-		if (Key_Check(KEY_3, KEY_SINGLE))
+		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
 			LCD_Clear(WHITE);
 			return Flag;
@@ -126,7 +117,7 @@ int Menu2_Stats(void) // 二级菜单
 
 	while (1)
 	{
-		if (Key_Check(KEY_3, KEY_SINGLE))
+		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
 			Buzzer_OFF();
 			LED_OFF(); // 退出菜单时关闭LED
@@ -279,7 +270,7 @@ int Menu2_Setting(void)
 	LCD_ShowChinese(0, 0, "设置", LCD_16X16, BLACK, WHITE, 1);
 	LCD_ShowNum(72, 100, StepLength, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	LCD_ShowNum(72, 60, LightValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
-	LCD_ShowNum(72, 80, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+	LCD_ShowSignedNum(72, 80, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	lastSetFlag = 1;
 	while (1)
 	{
@@ -304,7 +295,7 @@ int Menu2_Setting(void)
 			}
 		}
 
-		if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CW))
 		{
 			SetFlag--;
 			if (SetFlag == 0)
@@ -312,7 +303,7 @@ int Menu2_Setting(void)
 				SetFlag = 5;
 			}
 		}
-		if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CCW))
 		{
 			SetFlag++;
 			if (SetFlag == 6)
@@ -365,7 +356,7 @@ int Menu2_Setting(void)
 			lastSetFlag = SetFlag;
 		}
 
-		if (Key_Check(KEY_3, KEY_SINGLE))
+		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
 			Menu3_Set = SetFlag;
 		}
@@ -482,7 +473,7 @@ int Menu2_Function(void)
 			}
 		}
 
-		if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CW))
 		{
 			FunctionFlag--;
 			if (FunctionFlag == 0)
@@ -490,7 +481,7 @@ int Menu2_Function(void)
 				FunctionFlag = 3;
 			}
 		}
-		if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CCW))
 		{
 			FunctionFlag++;
 			if (FunctionFlag == 4)
@@ -533,7 +524,7 @@ int Menu2_Function(void)
 			lastFuncFlag = FunctionFlag;
 		}
 
-		if (Key_Check(KEY_3, KEY_SINGLE))
+		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
 			Menu2_Finction = FunctionFlag;
 		}
@@ -594,7 +585,7 @@ int Menu3_Music(void)
 	lastPauseFlag = 1;
 	while (1)
 	{
-		if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CW))
 		{
 			PlayerFlag--;
 			if (PlayerFlag == 0)
@@ -602,7 +593,7 @@ int Menu3_Music(void)
 				PlayerFlag = 4;
 			}
 		}
-		if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CCW))
 		{
 			PlayerFlag++;
 			if (PlayerFlag == 5)
@@ -610,7 +601,7 @@ int Menu3_Music(void)
 				PlayerFlag = 1;
 			}
 		}
-		if (Key_Check(KEY_3, KEY_SINGLE))
+		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
 			switch (PlayerFlag)
 			{
@@ -875,7 +866,7 @@ int Menu2_History(void)
 			lastStorageState = currentState;
 		}
 
-		if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CW))
 		{
 			HisFlag--;
 			if (HisFlag == 0)
@@ -883,7 +874,7 @@ int Menu2_History(void)
 				HisFlag = 6;
 			}
 		}
-		if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CCW))
 		{
 			HisFlag++;
 			if (HisFlag == 7)
@@ -941,7 +932,7 @@ int Menu2_History(void)
 			}
 			lastHisFlag = HisFlag;
 		}
-		if (Key_Check(KEY_3, KEY_SINGLE))
+		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
 			Menu2_HistoryFlag = HisFlag;
 		}
@@ -1156,7 +1147,7 @@ int Menu3_SetDate(void)
 	{
 		if (SwitchDateFlag == 0) // 切换模式
 		{
-			if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
+			if (Encoder_Check(ENCODER_CW))
 			{
 				DateFlag--;
 				if (DateFlag == 0)
@@ -1164,7 +1155,7 @@ int Menu3_SetDate(void)
 					DateFlag = 6;
 				}
 			}
-			else if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+			else if (Encoder_Check(ENCODER_CCW))
 			{
 				DateFlag++;
 				if (DateFlag == 7)
@@ -1175,7 +1166,7 @@ int Menu3_SetDate(void)
 		}
 		else if (SwitchDateFlag == 1) // 调整模式
 		{
-			if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT)) // KEY_1：减少
+			if (Encoder_Check(ENCODER_CW)) // KEY_1：减少
 			{
 				switch (DateFlag)
 				{
@@ -1253,7 +1244,7 @@ int Menu3_SetDate(void)
 				}
 				}
 			}
-			else if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT)) // KEY_2：增加
+			else if (Encoder_Check(ENCODER_CCW)) // KEY_2：增加
 			{
 				switch (DateFlag)
 				{
@@ -1314,11 +1305,11 @@ int Menu3_SetDate(void)
 				}
 			}
 		}
-		if (Key_Check(KEY_3, KEY_SINGLE))
+		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
 			SwitchDateFlag = !SwitchDateFlag;
 		}
-		else if (Key_Check(KEY_3, KEY_LONG))
+		else if (Encoder_Check(ENCODER_BTN_LONG))
 		{
 			LCD_Clear(WHITE);
 			LCD_ShowChinese(0, 0, "设置", LCD_16X16, BLACK, WHITE, 1);
@@ -1404,13 +1395,13 @@ int Menu3_SetLight(void)
 	LCD_ShowChinese(0, 100, "单次步长", LCD_16X16, BLACK, WHITE, 0);
 	LCD_ShowNum(72, 100, StepLength, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	LCD_ShowNum(72, 60, LightValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
-	LCD_ShowNum(72, 80, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+	LCD_ShowSignedNum(72, 80, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	LCD_ShowString(64, 60, ">", LCD_8X16, WHITE, BLACK, 0);
 	LastLightValue = LightValue;
 
 	while (1)
 	{
-		if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CW))
 		{
 			LightValue = LightValue - StepLength;
 			if (LightValue <= 0)
@@ -1418,7 +1409,7 @@ int Menu3_SetLight(void)
 				LightValue = 999;
 			}
 		}
-		if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CCW))
 		{
 			LightValue = LightValue + StepLength;
 			if (LightValue >= 999)
@@ -1426,7 +1417,7 @@ int Menu3_SetLight(void)
 				LightValue = 0;
 			}
 		}
-		if (Key_Check(KEY_3, KEY_SINGLE))
+		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
 			LCD_Clear(WHITE);
 			LastLightValue = 0xFFFF;
@@ -1454,13 +1445,13 @@ int Menu3_SetTemp(void)
 	LCD_ShowChinese(0, 100, "单次步长", LCD_16X16, BLACK, WHITE, 0);
 	LCD_ShowNum(72, 100, StepLength, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	LCD_ShowNum(72, 60, LightValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
-	LCD_ShowNum(72, 80, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+	LCD_ShowSignedNum(72, 80, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	LCD_ShowString(64, 80, ">", LCD_8X16, WHITE, BLACK, 0);
 	LastTempValue = TempValue;
 
 	while (1)
 	{
-		if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CW))
 		{
 			TempValue = TempValue - StepLength;
 			if (TempValue <= -40)
@@ -1468,7 +1459,7 @@ int Menu3_SetTemp(void)
 				TempValue = 115;
 			}
 		}
-		if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CCW))
 		{
 			TempValue = TempValue + StepLength;
 			if (TempValue >= 115)
@@ -1476,7 +1467,7 @@ int Menu3_SetTemp(void)
 				TempValue = -40;
 			}
 		}
-		if (Key_Check(KEY_3, KEY_SINGLE))
+		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
 			LCD_Clear(WHITE);
 			LastTempValue = 0xFF;
@@ -1486,7 +1477,7 @@ int Menu3_SetTemp(void)
 		if (TempValue != LastTempValue)
 		{
 			LCD_DrawRectangle_Fill(72, 80, 110, 95, WHITE);
-			LCD_ShowNum(72, 80, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+			LCD_ShowSignedNum(72, 80, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 			LastTempValue = TempValue;
 		}
 	}
@@ -1504,13 +1495,13 @@ int Menu3_SetLength(void)
 	LCD_ShowChinese(0, 100, "单次步长", LCD_16X16, BLACK, WHITE, 0);
 	LCD_ShowNum(72, 100, StepLength, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	LCD_ShowNum(72, 60, LightValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
-	LCD_ShowNum(72, 80, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
+	LCD_ShowSignedNum(72, 80, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	LCD_ShowString(64, 100, ">", LCD_8X16, WHITE, BLACK, 0);
 	LastStepLength = StepLength;
 
 	while (1)
 	{
-		if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CW))
 		{
 			StepLength--;
 			if (StepLength == 0)
@@ -1518,7 +1509,7 @@ int Menu3_SetLength(void)
 				StepLength = 100;
 			}
 		}
-		if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CCW))
 		{
 			StepLength++;
 			if (StepLength == 101)
@@ -1526,7 +1517,7 @@ int Menu3_SetLength(void)
 				StepLength = 0;
 			}
 		}
-		if (Key_Check(KEY_3, KEY_SINGLE))
+		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
 			LCD_Clear(WHITE);
 			LastStepLength = 0xFF;
@@ -1569,7 +1560,7 @@ int Menu3_AutoSaveSet(void)
 	}
 	while (1)
 	{
-		if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CW))
 		{
 			AutoSaveFlag--;
 			if (AutoSaveFlag == 0)
@@ -1577,7 +1568,7 @@ int Menu3_AutoSaveSet(void)
 				AutoSaveFlag = 3;
 			}
 		}
-		if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CCW))
 		{
 			AutoSaveFlag++;
 			if (AutoSaveFlag == 4)
@@ -1585,7 +1576,7 @@ int Menu3_AutoSaveSet(void)
 				AutoSaveFlag = 1;
 			}
 		}
-		if (Key_Check(KEY_3, KEY_SINGLE))
+		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
 			LCD_Clear(WHITE);
 			Menu3_ToggleSaveFlag = AutoSaveFlag;
@@ -1720,7 +1711,7 @@ int Menu3_ReadRecord(void)
 	while (1)
 	{
 		NowTotalRecords = DataStorage_New_GetCount();
-		if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CW))
 		{
 			if (ShowRecordID > 0)
 			{
@@ -1728,7 +1719,7 @@ int Menu3_ReadRecord(void)
 			}
 			RefreshFlag = 1;
 		}
-		if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CCW))
 		{
 			if (ShowRecordID < NowTotalRecords - 1)
 			{
@@ -1736,7 +1727,7 @@ int Menu3_ReadRecord(void)
 			}
 			RefreshFlag = 1;
 		}
-		if (Key_Check(KEY_3, KEY_SINGLE))
+		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
 			LCD_Clear(WHITE);
 			Menu3_ReadRecordFlag = ReadRecordFlag;
@@ -1763,7 +1754,7 @@ int Menu3_ChipErase(void)
 	LCD_ShowChinese(88, 72, "否", LCD_16X16, BLACK, WHITE, 0);
 	while (1)
 	{
-		if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CW))
 		{
 			EraseFlag--;
 			if (EraseFlag == 0)
@@ -1771,7 +1762,7 @@ int Menu3_ChipErase(void)
 				EraseFlag = 2;
 			}
 		}
-		if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CCW))
 		{
 			EraseFlag++;
 			if (EraseFlag == 3)
@@ -1779,7 +1770,7 @@ int Menu3_ChipErase(void)
 				EraseFlag = 1;
 			}
 		}
-		if (Key_Check(KEY_3, KEY_SINGLE))
+		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
 			LCD_Clear(WHITE);
 			Menu3_EraseFlag = EraseFlag;
@@ -1831,7 +1822,7 @@ int Menu3_SetMaxRecord(void)
 	{
 		if (ToggleSaveFlag == 0)
 		{
-			if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
+			if (Encoder_Check(ENCODER_CW))
 			{
 				tempMax--;
 				if (tempMax == 0)
@@ -1839,7 +1830,7 @@ int Menu3_SetMaxRecord(void)
 					tempMax = 250;
 				}
 			}
-			if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+			if (Encoder_Check(ENCODER_CCW))
 			{
 				tempMax++;
 				if (tempMax == 251)
@@ -1847,7 +1838,7 @@ int Menu3_SetMaxRecord(void)
 					tempMax = 1;
 				}
 			}
-			if (Key_Check(KEY_3, KEY_SINGLE))
+			if (Encoder_Check(ENCODER_BTN_SINGLE))
 			{
 				uint8_t saveResult = DataStorage_New_SetMaxCount(tempMax);
 				LCD_Clear(WHITE);
@@ -1932,7 +1923,7 @@ int Menu3_StopWatch(void)
 
 	while (1)
 	{
-		if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CW))
 		{
 			StopWatchFlag--;
 			if (StopWatchFlag == 0)
@@ -1940,7 +1931,7 @@ int Menu3_StopWatch(void)
 				StopWatchFlag = 4;
 			}
 		}
-		if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CCW))
 		{
 			StopWatchFlag++;
 			if (StopWatchFlag == 5)
@@ -1948,7 +1939,7 @@ int Menu3_StopWatch(void)
 				StopWatchFlag = 1;
 			}
 		}
-		if (Key_Check(KEY_3, KEY_SINGLE))
+		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
 			StopWatchTemp = StopWatchFlag;
 		}
@@ -2059,7 +2050,7 @@ int Menu3_ShowGraph(void)
 	while (1)
 	{
 		// KEY1: 向左移动
-		if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CW))
 		{
 			if (offset > 0)
 			{
@@ -2069,7 +2060,7 @@ int Menu3_ShowGraph(void)
 		}
 
 		// KEY2: 向右移动
-		if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CCW))
 		{
 			// 最大偏移量为总记录数减去屏幕显示点数
 			int16_t maxOffset = totalRecords - 25;
@@ -2083,14 +2074,14 @@ int Menu3_ShowGraph(void)
 		}
 
 		// KEY3单击: 切换温度/光照
-		if (Key_Check(KEY_3, KEY_SINGLE))
+		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
 			chartType = 1 - chartType;
 			needRedraw = 1;
 		}
 
 		// KEY3长按: 退出
-		if (Key_Check(KEY_3, KEY_LONG))
+		if (Encoder_Check(ENCODER_BTN_LONG))
 		{
 			return 0;
 		}
@@ -2285,9 +2276,6 @@ void DrawStorageChart(uint8_t chartType, int16_t offset, uint8_t totalRecords)
 			prevY = y;
 		}
 	}
-
-	// 显示操作提示
-	LCD_ShowString(0, 145, "K1:< K2:> K3:SW/EXIT", LCD_6X8, BLACK, WHITE, 1);
 }
 
 int Menu4_ToggleSave(void)
@@ -2304,7 +2292,7 @@ int Menu4_ToggleSave(void)
 	LCD_ShowNum(96, 100, SaveInterval_Time[2], LCD_8X16, BLACK, WHITE, 0, 1, 2);
 	while (1)
 	{
-		if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CW))
 		{
 			// 检查是否尝试从关闭切换到开启
 			if (ToggleSaveFlag == 0)
@@ -2327,7 +2315,7 @@ int Menu4_ToggleSave(void)
 				showWarning = 0;
 			}
 		}
-		if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT))
+		if (Encoder_Check(ENCODER_CCW))
 		{
 			// 检查是否尝试从关闭切换到开启
 			if (ToggleSaveFlag == 0)
@@ -2350,7 +2338,7 @@ int Menu4_ToggleSave(void)
 				showWarning = 0;
 			}
 		}
-		if (Key_Check(KEY_3, KEY_SINGLE))
+		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
 			LCD_Clear(WHITE);
 			return 0;
@@ -2372,7 +2360,8 @@ int Menu4_ToggleSave(void)
 		if (showWarning)
 		{
 			LCD_ShowChinese(0, 120, "存储已满", LCD_16X16, RED, WHITE, 1);
-			LCD_ShowChinese(64, 120, "请擦除", LCD_16X16, RED, WHITE, 0);
+			Delay_s(1);
+			showWarning = 0; // 只显示一次警告
 		}
 		else
 		{
@@ -2399,7 +2388,7 @@ int Menu4_SaveInterval(void)
 	{
 		if (SwitchFlag == 0)
 		{
-			if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT)) // KEY_1：上一项（小时→秒循环）
+			if (Encoder_Check(ENCODER_CW)) // KEY_1：上一项（小时→秒循环）
 			{
 				SaveIntervalFlag--;
 				if (SaveIntervalFlag == 0)
@@ -2407,7 +2396,7 @@ int Menu4_SaveInterval(void)
 					SaveIntervalFlag = 3;
 				}
 			}
-			else if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT)) // KEY_2：下一项（秒→小时循环）
+			else if (Encoder_Check(ENCODER_CCW)) // KEY_2：下一项（秒→小时循环）
 			{
 				SaveIntervalFlag++;
 				if (SaveIntervalFlag == 4)
@@ -2418,7 +2407,7 @@ int Menu4_SaveInterval(void)
 		}
 		else if (SwitchFlag == 1)
 		{
-			if (Key_Check(KEY_1, KEY_UP) || Key_Check(KEY_1, KEY_REPEAT)) // KEY_1：减少
+			if (Encoder_Check(ENCODER_CW)) // KEY_1：减少
 			{
 				switch (SaveIntervalFlag)
 				{
@@ -2467,7 +2456,7 @@ int Menu4_SaveInterval(void)
 					SaveInterval_Time[2] = 1;
 				}
 			}
-			else if (Key_Check(KEY_2, KEY_UP) || Key_Check(KEY_2, KEY_REPEAT)) // KEY_2：增加
+			else if (Encoder_Check(ENCODER_CCW)) // KEY_2：增加
 			{
 				switch (SaveIntervalFlag)
 				{
@@ -2508,11 +2497,11 @@ int Menu4_SaveInterval(void)
 				}
 			}
 		}
-		if (Key_Check(KEY_3, KEY_SINGLE))
+		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
 			SwitchFlag = !SwitchFlag;
 		}
-		else if (Key_Check(KEY_3, KEY_LONG))
+		else if (Encoder_Check(ENCODER_BTN_LONG))
 		{
 			LCD_Clear(WHITE);
 			return 0;
@@ -2633,6 +2622,7 @@ void TIM4_IRQHandler(void)
 	{
 		Key_Tick();
 		StopWatch_Tick();
+		Encoder_Tick(); // 编码器按键防抖和长按检测(1ms周期)
 		TIM_ClearITPendingBit(TIM4, TIM_IT_Update);
 	}
 }

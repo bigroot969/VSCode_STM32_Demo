@@ -1,18 +1,6 @@
-#include "stm32f10x.h"
-#include "stdio.h"
-#include "LED.h"
-#include "Delay.h"
-#include "LightSensor.h"
-#include "LCD.h"
-#include "Timer.h"
-#include "Key.h"
-#include "PWM.h"
-#include "Buzzer.h"
-#include "ADCx.h"
-#include "TempSensor.h"
-#include "MyRTC.h"
 #include "Menu.h"
-#include "DataStorage.h"
+#include "Timer.h"
+#include "Encoder.h"
 
 uint8_t PageFlag;
 extern uint8_t ToggleSaveFlag;
@@ -42,8 +30,11 @@ int main()
 	DataStorage_New_Init(); // 数据存储初始化(包含W25Q64和SPI2初始化)
 	// W25Q64_ChipErase(); // 擦除整个芯片（仅测试用，实际应用可注释掉）
 
+	// 编码器初始化(必须在Timer_Init之前，避免TIM4冲突)
+	//Encoder_Init(); // EC11编码器初始化(占用TIM4编码器模式)
+
 	// 定时器初始化(放在最后,因为会立即启动中断)
-	Timer_Init(); // TIM2/TIM4初始化并启动定时中断
+	Timer_Init(); // TIM2初始化并启动定时中断(TIM4已被编码器占用)
 	LED_Init();	  // LED初始化
 	LED_ON();
 

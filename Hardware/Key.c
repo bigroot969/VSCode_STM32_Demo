@@ -13,11 +13,17 @@ uint8_t Key_Flag[KEY_COUNT];
 void Key_Init(void)
 {
 	RCC_APB2PeriphClockCmd(Key_Clk, ENABLE);
-	GPIO_InitTypeDef GPIO_InitStructure;
-	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
-	GPIO_InitStructure.GPIO_Pin = Key1_Pin | Key2_Pin | Key3_Pin | Key4_Pin;
-	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	GPIO_Init(Key_GPIO, &GPIO_InitStructure);
+	GPIO_InitTypeDef GPIOU_InitStructure;
+	GPIOU_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
+	GPIOU_InitStructure.GPIO_Pin = Key1_Pin | Key2_Pin | Key3_Pin;
+	GPIOU_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(Key_GPIO, &GPIOU_InitStructure);
+
+	GPIO_InitTypeDef GPIOD_InitStructure;
+	GPIOD_InitStructure.GPIO_Mode = GPIO_Mode_IPD;
+	GPIOD_InitStructure.GPIO_Pin = Key4_Pin;
+	GPIOD_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_Init(Key_GPIO, &GPIOD_InitStructure);
 }
 uint8_t Key_GetState(uint8_t n)
 {

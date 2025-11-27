@@ -9,10 +9,10 @@ void Timer_Init(void)
 {
 	/*开启时钟*/
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM2, ENABLE); // 开启TIM2的时钟
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE); // 开启TIM4的时钟
 	/*配置时钟源*/
 	TIM_InternalClockConfig(TIM2); // 选择TIM2为内部时钟，若不调用此函数，TIM默认也为内部时钟
-	TIM_InternalClockConfig(TIM4);
+	TIM_InternalClockConfig(TIM4); // 选择TIM4为内部时钟
 	/*TIM2时基单元初始化*/
 	TIM_TimeBaseInitTypeDef TIM2_TimeBaseInitStructure;				 // 定义结构体变量
 	TIM2_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;	 // 时钟分频，选择不分频，此参数用于配置滤波器时钟，不影响时基单元功能
@@ -22,12 +22,12 @@ void Timer_Init(void)
 	TIM2_TimeBaseInitStructure.TIM_RepetitionCounter = 0;			 // 重复计数器，高级定时器才会用到
 	TIM_TimeBaseInit(TIM2, &TIM2_TimeBaseInitStructure);			 // 将结构体变量交给TIM_TimeBaseInit，配置TIM2的时基单元
 
-	/*TIM4时基单元配置*/
-	TIM_TimeBaseInitTypeDef TIM4_TimeBaseInitStructure; // TIM4专用结构体
+	/*TIM4时基单元配置(1ms中断用于Key_Tick/StopWatch_Tick/Encoder_Tick)*/
+	TIM_TimeBaseInitTypeDef TIM4_TimeBaseInitStructure;
 	TIM4_TimeBaseInitStructure.TIM_ClockDivision = TIM_CKD_DIV1;
 	TIM4_TimeBaseInitStructure.TIM_CounterMode = TIM_CounterMode_Up;
-	TIM4_TimeBaseInitStructure.TIM_Period = 100 - 1;	// ARR值
-	TIM4_TimeBaseInitStructure.TIM_Prescaler = 720 - 1; // PSC预分频
+	TIM4_TimeBaseInitStructure.TIM_Period = 100 - 1;		// ARR值
+	TIM4_TimeBaseInitStructure.TIM_Prescaler = 720 - 1;	// PSC预分频
 	TIM4_TimeBaseInitStructure.TIM_RepetitionCounter = 0;
 	TIM_TimeBaseInit(TIM4, &TIM4_TimeBaseInitStructure);
 
@@ -40,7 +40,7 @@ void Timer_Init(void)
 	TIM_ITConfig(TIM2, TIM_IT_Update, ENABLE); // 开启TIM2的更新中断
 
 	TIM_ClearFlag(TIM4, TIM_FLAG_Update);
-	TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE);
+	TIM_ITConfig(TIM4, TIM_IT_Update, ENABLE); // 开启TIM4的更新中断
 
 	/*NVIC配置(注意：NVIC分组应在main函数中统一配置)*/
 	NVIC_InitTypeDef NVIC2_InitStructure;					   // 定义结构体变量
@@ -51,15 +51,15 @@ void Timer_Init(void)
 	NVIC_Init(&NVIC2_InitStructure);						   // 将结构体变量交给NVIC_Init，配置NVIC外设
 
 	NVIC_InitTypeDef NVIC4_InitStructure;
-	NVIC4_InitStructure.NVIC_IRQChannel = TIM4_IRQn; // TIM4中断通道
+	NVIC4_InitStructure.NVIC_IRQChannel = TIM4_IRQn;	// TIM4中断通道
 	NVIC4_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC4_InitStructure.NVIC_IRQChannelPreemptionPriority = 2; // 抢占优先级2（与TIM2相同）
-	NVIC4_InitStructure.NVIC_IRQChannelSubPriority = 2;		   // 响应优先级2（低于TIM2）
+	NVIC4_InitStructure.NVIC_IRQChannelPreemptionPriority = 2; // 抢占优先级2(与TIM2相同)
+	NVIC4_InitStructure.NVIC_IRQChannelSubPriority = 2;		// 响应优先级2(低于TIM2)
 	NVIC_Init(&NVIC4_InitStructure);
 
 	/*TIM使能*/
 	TIM_Cmd(TIM2, ENABLE); // 使能TIM2，定时器开始运行
-	TIM_Cmd(TIM4, ENABLE);
+	TIM_Cmd(TIM4, ENABLE); // 使能TIM4，定时器开始运行
 }
 
 /* 定时器中断函数，可以复制到使用它的地方
