@@ -563,235 +563,127 @@ int Menu2_Function(void)
 
 int Menu3_Music(void)
 {
-	uint8_t PlayerFlag = 1;
-	uint8_t lastPlayerFlag = 0;
-	uint8_t lastPauseFlag = 0xFF;
 	uint8_t CurrentMusic = 1;
+	uint8_t lastPauseFlag = 0xFF;
 
 	LCD_Clear(WHITE);
 	LCD_ShowChinese(0, 0, "音乐播放", LCD_16X16, BLACK, WHITE, 1);
-	LCD_ShowChinese(0, 60, "当前播放", LCD_16X16, BLACK, WHITE, 1);
-	LCD_ShowString(0, 40, "<<<", LCD_8X16, WHITE, BLACK, 0); // 初始高亮
-	LCD_ShowString(104, 40, ">>>", LCD_8X16, BLACK, WHITE, 0);
-	LCD_ShowChinese(0, 144, "暂停", LCD_16X16, BLACK, WHITE, 0);
-	LCD_ShowChinese(96, 144, "退出", LCD_16X16, BLACK, WHITE, 0);
-	LCD_ShowChinese(0, 80, "小星星", LCD_16X16, BLACK, WHITE, 1);
-	LCD_DrawRectangle(1, 120, 125, 126, BLACK); // 绘制进度条边框
+	LCD_ShowChinese(0, 40, "当前播放", LCD_16X16, BLACK, WHITE, 1);
+	LCD_ShowChinese(0, 70, "    小星星    ", LCD_16X16, BLACK, WHITE, 1);
+	LCD_DrawRectangle(1, 100, 125, 106, BLACK); // 绘制进度条边框
+
 	Buzzer_PauseFlag = 1;
 	Buzzer_FinishFlag = 0;
 	Buzzer_Progress = 0;
 	Buzzer_Speed = BPM2Speed(MusicBPM[CurrentMusic - 1]);
-	lastPlayerFlag = 1;
-	lastPauseFlag = 1;
+
 	while (1)
 	{
+		// 1. 旋转切换歌曲
 		if (Encoder_Check(ENCODER_CW))
 		{
-			PlayerFlag--;
-			if (PlayerFlag == 0)
-			{
-				PlayerFlag = 4;
-			}
+			CurrentMusic++;
+			if (CurrentMusic > Music_Count)
+				CurrentMusic = 1;
+			goto SWITCH_SONG;
 		}
 		if (Encoder_Check(ENCODER_CCW))
 		{
-			PlayerFlag++;
-			if (PlayerFlag == 5)
-			{
-				PlayerFlag = 1;
-			}
+			CurrentMusic--;
+			if (CurrentMusic == 0)
+				CurrentMusic = Music_Count;
+			goto SWITCH_SONG;
 		}
+
+		// 2. 单击播放/暂停
 		if (Encoder_Check(ENCODER_BTN_SINGLE))
 		{
-			switch (PlayerFlag)
+			if (Buzzer_FinishFlag)
 			{
-			case 1:
-			{
-				if (Buzzer_PauseFlag || Buzzer_FinishFlag)
-				{
-					CurrentMusic--;
-					if (CurrentMusic == 0)
-					{
-						CurrentMusic = Music_Count;
-					}
-					switch (CurrentMusic)
-					{
-					case 1:
-						LCD_ShowChinese(0, 80, "    小星星    ", LCD_16X16, BLACK, WHITE, 1);
-						break;
-					case 2:
-						LCD_ShowChinese(0, 80, "   天空之城   ", LCD_16X16, BLACK, WHITE, 1);
-						break;
-					case 3:
-						LCD_ShowChinese(0, 80, "    春日影    ", LCD_16X16, BLACK, WHITE, 1);
-						break;
-					case 4:
-						LCD_ShowChinese(0, 80, "   口琴M-7    ", LCD_16X16, BLACK, WHITE, 1);
-						break;
-					case 5:
-						LCD_ShowString(0, 80, "Light of Nibel", LCD_8X16, BLACK, WHITE, 1);
-						break;
-					}
-					Buzzer_Speed = BPM2Speed(MusicBPM[CurrentMusic - 1]);
-					Buzzer_FinishFlag = 0;
-					Buzzer_Progress = 0;
-					Buzzer_PauseFlag = 1;
-				}
-				LCD_DrawRectangle_Fill(3, 121, 124, 125, WHITE);
-				break;
-			}
-			case 2:
-			{
-				if (Buzzer_PauseFlag || Buzzer_FinishFlag)
-				{
-					CurrentMusic++;
-					if (CurrentMusic == Music_Count + 1)
-					{
-						CurrentMusic = 1;
-					}
-					switch (CurrentMusic)
-					{
-					case 1:
-						LCD_ShowChinese(0, 80, "    小星星    ", LCD_16X16, BLACK, WHITE, 1);
-						break;
-					case 2:
-						LCD_ShowChinese(0, 80, "   天空之城   ", LCD_16X16, BLACK, WHITE, 1);
-						break;
-					case 3:
-						LCD_ShowChinese(0, 80, "    春日影    ", LCD_16X16, BLACK, WHITE, 1);
-						break;
-					case 4:
-						LCD_ShowChinese(0, 80, "   口琴M-7    ", LCD_16X16, BLACK, WHITE, 1);
-						break;
-					case 5:
-						LCD_ShowString(0, 80, "Light of Nibel", LCD_8X16, BLACK, WHITE, 1);
-						break;
-					}
-					Buzzer_Speed = BPM2Speed(MusicBPM[CurrentMusic - 1]);
-					Buzzer_FinishFlag = 0;
-					Buzzer_PauseFlag = 1;
-					Buzzer_Progress = 0;
-				}
-				LCD_DrawRectangle_Fill(3, 121, 124, 125, WHITE);
-				break;
-			}
-			case 3:
-			{
-				if (Buzzer_FinishFlag)
-				{
-					LCD_DrawRectangle_Fill(4, 122, 124, 124, WHITE);
-					Buzzer_FinishFlag = 0;
-					Buzzer_PauseFlag = 0;
-					Buzzer_Progress = 0;
-				}
-				else
-				{
-					Buzzer_PauseFlag = !Buzzer_PauseFlag; // 翻转状态（核心修正）
-					if (Buzzer_PauseFlag)				  // 切换到暂停
-					{
-						Buzzer_OFF();
-					}
-				}
-				break;
-			}
-			case 4:
-			{
-				Buzzer_OFF();
+				Buzzer_FinishFlag = 0;
 				Buzzer_Progress = 0;
-				return 0;
+				Buzzer_PauseFlag = 0;
+				LCD_DrawRectangle_Fill(3, 121, 124, 125, WHITE); // 清空进度条
 			}
-			}
-		}
-
-		// 增量更新菜单高亮（仅在 PlayerFlag 变化时刷新）
-		if (PlayerFlag != lastPlayerFlag)
-		{
-			// 清除旧高亮
-			switch (lastPlayerFlag)
-			{
-			case 1:
-				LCD_ShowString(0, 40, "<<<", LCD_8X16, BLACK, WHITE, 0);
-				break;
-			case 2:
-				LCD_ShowString(104, 40, ">>>", LCD_8X16, BLACK, WHITE, 0);
-				break;
-			case 3:
-				if (lastPauseFlag == 1)
-					LCD_ShowChinese(0, 144, "暂停", LCD_16X16, BLACK, WHITE, 0);
-				else
-					LCD_ShowChinese(0, 144, "播放", LCD_16X16, BLACK, WHITE, 0);
-				break;
-			case 4:
-				LCD_ShowChinese(96, 144, "退出", LCD_16X16, BLACK, WHITE, 0);
-				break;
-			}
-
-			// 绘制新高亮
-			switch (PlayerFlag)
-			{
-			case 1:
-				LCD_ShowString(0, 40, "<<<", LCD_8X16, WHITE, BLACK, 0);
-				break;
-			case 2:
-				LCD_ShowString(104, 40, ">>>", LCD_8X16, WHITE, BLACK, 0);
-				break;
-			case 3:
-				if (Buzzer_PauseFlag == 1)
-					LCD_ShowChinese(0, 144, "暂停", LCD_16X16, WHITE, BLACK, 0);
-				else
-					LCD_ShowChinese(0, 144, "播放", LCD_16X16, WHITE, BLACK, 0);
-				break;
-			case 4:
-				LCD_ShowChinese(96, 144, "退出", LCD_16X16, WHITE, BLACK, 0);
-				break;
-			}
-
-			lastPlayerFlag = PlayerFlag;
-			lastPauseFlag = Buzzer_PauseFlag;
-		}
-
-		// 仅在暂停/播放状态变化时更新文本（PlayerFlag=3 时）
-		if (PlayerFlag == 3 && Buzzer_PauseFlag != lastPauseFlag)
-		{
-			if (Buzzer_PauseFlag == 1)
-				LCD_ShowChinese(0, 144, "暂停", LCD_16X16, WHITE, BLACK, 0);
 			else
-				LCD_ShowChinese(0, 144, "播放", LCD_16X16, WHITE, BLACK, 0);
+			{
+				Buzzer_PauseFlag = !Buzzer_PauseFlag;
+				if (Buzzer_PauseFlag)
+					Buzzer_OFF();
+			}
+		}
+
+		// 3. 长按退出
+		if (Encoder_Check(ENCODER_BTN_LONG))
+		{
+			Buzzer_OFF();
+			Buzzer_Progress = 0;
+			return 0;
+		}
+
+		// 更新播放/暂停状态显示
+		if (Buzzer_PauseFlag != lastPauseFlag)
+		{
+			if (Buzzer_PauseFlag)
+				LCD_ShowChinese(0, 120, "暂停", LCD_16X16, BLACK, WHITE, 1);
+			else
+				LCD_ShowChinese(0, 120, "播放", LCD_16X16, BLACK, WHITE, 1);
 			lastPauseFlag = Buzzer_PauseFlag;
 		}
 
+		// 播放逻辑
 		if (!Buzzer_PauseFlag && !Buzzer_FinishFlag)
 		{
 			switch (CurrentMusic)
 			{
 			case 1:
-			{
 				Buzzer_Play(LittleStar);
 				break;
-			}
 			case 2:
-			{
 				Buzzer_Play(CastleInTheSky);
 				break;
-			}
 			case 3:
-			{
 				Buzzer_Play(Haruhikage);
 				break;
-			}
 			case 4:
-			{
 				Buzzer_Play(Orb);
 				break;
-			}
 			case 5:
-			{
 				Buzzer_Play(Ori);
 				break;
 			}
-			}
 		}
-		LCD_DrawRectangle_Fill(3, 122, Buzzer_Progress + 2, 124, BLUE2); // 更新进度条
+		LCD_DrawRectangle_Fill(3, 102, Buzzer_Progress + 2, 104, BLUE2); // 更新进度条
+
+		continue;
+
+	SWITCH_SONG:
+		// 切换歌曲后的公共逻辑
+		Buzzer_Speed = BPM2Speed(MusicBPM[CurrentMusic - 1]);
+		Buzzer_FinishFlag = 0;
+		Buzzer_Progress = 0;
+		Buzzer_PauseFlag = 1;							 // 切换后暂停
+		LCD_DrawRectangle_Fill(3, 101, 124, 105, WHITE); // 清空进度条
+
+		// 更新歌曲名显示
+		switch (CurrentMusic)
+		{
+		case 1:
+			LCD_ShowChinese(0, 70, "    小星星    ", LCD_16X16, BLACK, WHITE, 1);
+			break;
+		case 2:
+			LCD_ShowChinese(0, 70, "   天空之城   ", LCD_16X16, BLACK, WHITE, 1);
+			break;
+		case 3:
+			LCD_ShowChinese(0, 70, "    春日影    ", LCD_16X16, BLACK, WHITE, 1);
+			break;
+		case 4:
+			LCD_ShowChinese(0, 70, "   口琴M-7    ", LCD_16X16, BLACK, WHITE, 1);
+			break;
+		case 5:
+			LCD_ShowString(0, 70, "Light of Nibel", LCD_8X16, BLACK, WHITE, 1);
+			break;
+		}
 	}
 }
 
