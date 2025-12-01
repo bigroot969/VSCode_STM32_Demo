@@ -13,6 +13,10 @@ uint8_t Buzzer_Progress;   // 播放进度
 uint8_t Buzzer_PauseFlag;  // 停止标志
 uint8_t Buzzer_FinishFlag; // 结束标志
 
+// 新增状态变量
+static uint8_t Buzzer_State = 0;	  // 0:空闲, 1:播放中, 2:间歇
+static uint16_t Buzzer_TimeCount = 0; // 倒计时
+
 /**
  * @brief  蜂鸣器初始化函数，初始化PB0为蜂鸣器输出
  * @param  无
@@ -25,6 +29,21 @@ void Buzzer_Init(void)
 	Buzzer_PauseFlag = 1;
 	Buzzer_FinishFlag = 0;
 	Buzzer_Progress = 0;
+	Buzzer_State = 0;
+	Buzzer_TimeCount = 0;
+}
+
+/**
+ * @brief  蜂鸣器时基函数，在定时器中断中调用（1ms）
+ * @param  无
+ * @retval 无
+ */
+void Buzzer_Tick(void)
+{
+	if (Buzzer_TimeCount > 0)
+	{
+		Buzzer_TimeCount--;
+	}
 }
 
 uint16_t BPM2Speed(uint16_t BPM)
@@ -58,6 +77,7 @@ void Buzzer_ON(void)
 void Buzzer_OFF(void)
 {
 	TIM_Cmd(TIM3, DISABLE);
+	Buzzer_State = 0;
 }
 
 /**
@@ -84,33 +104,65 @@ void Buzzer_Sound(uint8_t Note, uint16_t Time)
 }
 
 /**
- * @brief  蜂鸣器播放函数，在main的主函数中循环调用
+ * @brief  蜂鸣器播放函数，在main的主函数中循环调用（非阻塞模式）
  * @param  Music 指定要播放的音乐
  * @retval 无
  */
 void Buzzer_Play(const uint8_t *Music)
 {
-	static uint16_t i = 0;
+	static uint16_t Music_Index = 0;
 	uint8_t NoteSelect, TimeSelect;
+	uint16_t duration;
 
-	if (!Buzzer_Progress)
+	if (Buzzer_Progress == 0)
 	{
-		i = 0;
+		Music_Index = 0;
 		Buzzer_FinishFlag = 0;
-	} // Buzzer_Progress清零时重置计数器
+		Buzzer_State = 0;
+		Buzzer_TimeCount = 0;
+	}
 
-	if (!Buzzer_FinishFlag && !Buzzer_PauseFlag) // 暂停或结束时不执行
+	if (!Buzzer_FinishFlag && !Buzzer_PauseFlag)
 	{
-		NoteSelect = Music[2 * (i + 1)]; // 读取音符
-		if (NoteSelect == 0xFF)			 // 若读取到结束符0xFF，则退出并置标志位
+		if (Buzzer_TimeCount == 0)
 		{
-			Buzzer_FinishFlag = 1;
-			Buzzer_PauseFlag = 1;
-			return;
+			if (Buzzer_State == 1) // 刚刚播放完一个音符，进入间歇
+			{
+				TIM_Cmd(TIM3, DISABLE);
+				Buzzer_TimeCount = 5; // 间歇5ms
+				Buzzer_State = 2;
+			}
+			else // 刚刚完成间歇（或初始状态），播放下一个音符
+			{
+				NoteSelect = Music[2 * (Music_Index + 1)];
+				if (NoteSelect == 0xFF)
+				{
+					Buzzer_FinishFlag = 1;
+					Buzzer_PauseFlag = 1;
+					Buzzer_State = 0;
+					TIM_Cmd(TIM3, DISABLE);
+					return;
+				}
+
+				TimeSelect = Music[2 * (Music_Index + 1) + 1];
+				duration = TimeSelect * Buzzer_Speed;
+
+				if (NoteSelect)
+				{
+					PWM_SetPrescaler(Buzzer_Freq[NoteSelect]);
+					TIM_Cmd(TIM3, ENABLE);
+				}
+				else
+				{
+					TIM_Cmd(TIM3, DISABLE);
+				}
+
+				Buzzer_TimeCount = duration;
+				Buzzer_State = 1;
+
+				Music_Index++;
+				Buzzer_Progress = 1 + Music_Index * 120 / (Music[0] * 256 + Music[1]);
+			}
 		}
-		TimeSelect = Music[2 * (i + 1) + 1];				 // 读取时长（16分音符时长的几倍）
-		Buzzer_Sound(NoteSelect, TimeSelect * Buzzer_Speed); // 蜂鸣器发声
-		i++;
-		Buzzer_Progress = 1 + i * 120 / (Music[0] * 256 + Music[1]); // 计算进度，+1防止进度不增加时i直接清零
 	}
 }

@@ -2,7 +2,7 @@
 #include <string.h>
 
 // 内部全局变量（简化设计：只在RAM中维护）
-static uint8_t g_MaxRecordCount = 50;   // 最大记录数（固定250）
+static uint8_t g_MaxRecordCount = 50;    // 最大记录数（固定250）
 static uint8_t g_CurrentRecordCount = 0; // 当前已存储记录数（通过扫描得出）
 
 /**
@@ -42,13 +42,15 @@ void DataStorage_New_Init(void)
     }
 
     // 扫描Flash，确定当前实际存储的记录数
+    uint8_t indexBuf;
     for (uint8_t i = 0; i < g_MaxRecordCount; i++)
     {
         uint32_t addr = STORAGE_DATA_START_ADDR + i * RECORD_SIZE_NEW;
-        W25Q64_ReadData(addr, (uint8_t *)&temp, RECORD_SIZE_NEW);
+        // 优化：只读取第一个字节(Index)来判断是否为空，减少SPI通信量
+        W25Q64_ReadData(addr, &indexBuf, 1);
 
         // 检查是否为空位置（全FF或Index不匹配）
-        if (temp.Index == 0xFF || temp.Index != (i + 1))
+        if (indexBuf == 0xFF || indexBuf != (i + 1))
         {
             break; // 遇到第一个空位置，停止扫描
         }
@@ -78,21 +80,32 @@ uint8_t DataStorage_New_Save(float temp, uint16_t light, const DateTime_New *tim
 
     // 计算存储地址
     uint32_t addr = STORAGE_DATA_START_ADDR + g_CurrentRecordCount * RECORD_SIZE_NEW;
+    uint32_t endAddr = addr + RECORD_SIZE_NEW - 1;
 
-    // 检查是否需要擦除扇区
-    uint32_t sectorAddr = (addr / SECTOR_SIZE) * SECTOR_SIZE;
-    uint32_t prevSectorAddr = 0xFFFFFFFF;
+    // 计算涉及的扇区
+    uint32_t startSector = (addr / SECTOR_SIZE) * SECTOR_SIZE;
+    uint32_t endSector = (endAddr / SECTOR_SIZE) * SECTOR_SIZE;
 
+    // 获取上一条记录结束位置所在的扇区
+    uint32_t prevEndSector = 0xFFFFFFFF;
     if (g_CurrentRecordCount > 0)
     {
         uint32_t prevAddr = STORAGE_DATA_START_ADDR + (g_CurrentRecordCount - 1) * RECORD_SIZE_NEW;
-        prevSectorAddr = (prevAddr / SECTOR_SIZE) * SECTOR_SIZE;
+        uint32_t prevEndAddr = prevAddr + RECORD_SIZE_NEW - 1;
+        prevEndSector = (prevEndAddr / SECTOR_SIZE) * SECTOR_SIZE;
     }
 
-    // 如果进入新扇区，先擦除
-    if (sectorAddr != prevSectorAddr)
+    // 1. 检查起始扇区：如果与上一条记录结束所在的扇区不同，说明进入了新扇区，需要擦除
+    if (startSector != prevEndSector)
     {
-        W25Q64_SectorErase(sectorAddr);
+        W25Q64_SectorErase(startSector);
+        W25Q64_WaitBusy();
+    }
+
+    // 2. 检查结束扇区：如果记录跨越了扇区边界，且结束扇区与起始扇区不同，说明尾部进入了下一个新扇区，也需要擦除
+    if (endSector != startSector)
+    {
+        W25Q64_SectorErase(endSector);
         W25Q64_WaitBusy();
     }
 

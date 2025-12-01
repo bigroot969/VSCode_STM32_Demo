@@ -129,11 +129,12 @@ float DS18B20_Get_Temp(void)
 	u8 TL, TH;
 	short tem;
 	float temperature;
-	DS18B20_Start(); // ds1820 start convert
+
+	// 1. 读取上一次转换的结果
 	DS18B20_Rst();
 	DS18B20_Check();
 	DS18B20_Write_Byte(0xCC); // skip rom
-	DS18B20_Write_Byte(0xBE); // convert
+	DS18B20_Write_Byte(0xBE); // read scratchpad
 	TL = DS18B20_Read_Byte(); // LSB
 	TH = DS18B20_Read_Byte(); // MSB
 
@@ -149,6 +150,10 @@ float DS18B20_Get_Temp(void)
 	tem <<= 8;
 	tem += TL;						   // 获得底八位
 	temperature = (float)tem * 0.0625; // 转换
+
+	// 2. 开始新的温度转换
+	DS18B20_Start();
+
 	if (temp)
 		return temperature; // 返回温度值
 	else
@@ -176,13 +181,16 @@ void DS18B20_Mode(u8 mode)
 
 float Temp_Average_Data(void)
 {
-	float tempData = 0.0f;
-	for (uint8_t i = 0; i < TEMP_READ_TIMES; i++)
+	static float lastTemp = 0.0f;
+	static uint16_t skipCount = 0;
+
+	// 减少读取频率，避免阻塞和频繁打断转换
+	// 假设主循环周期较快，每隔一定次数读取一次
+	if (skipCount++ >= 100)
 	{
-		tempData += DS18B20_Get_Temp();
-		Delay_ms(100);
+		skipCount = 0;
+		lastTemp = DS18B20_Get_Temp();
 	}
 
-	tempData /= TEMP_READ_TIMES;
-	return tempData;
+	return lastTemp;
 }

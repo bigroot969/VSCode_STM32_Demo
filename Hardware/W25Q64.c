@@ -19,13 +19,13 @@ void W25Q64_Init(void)
  */
 void W25Q64_ReadID(uint8_t *MID, uint16_t *DID)
 {
-	MySPI2_Start();							   // SPI起始
-	MySPI2_SwapByte(W25Q64_JEDEC_ID);		   // 交换发送读取ID的指令
-	*MID = MySPI2_SwapByte(W25Q64_DUMMY_BYTE);  // 交换接收MID，通过输出参数返回
-	*DID = MySPI2_SwapByte(W25Q64_DUMMY_BYTE);  // 交换接收DID高8位
-	*DID <<= 8;								   // 高8位移到高位
+	MySPI2_Start();								// SPI起始
+	MySPI2_SwapByte(W25Q64_JEDEC_ID);			// 交换发送读取ID的指令
+	*MID = MySPI2_SwapByte(W25Q64_DUMMY_BYTE);	// 交换接收MID，通过输出参数返回
+	*DID = MySPI2_SwapByte(W25Q64_DUMMY_BYTE);	// 交换接收DID高8位
+	*DID <<= 8;									// 高8位移到高位
 	*DID |= MySPI2_SwapByte(W25Q64_DUMMY_BYTE); // 或上交换接收DID的低8位，通过输出参数返回
-	MySPI2_Stop();							   // SPI终止
+	MySPI2_Stop();								// SPI终止
 }
 
 /**
@@ -35,9 +35,9 @@ void W25Q64_ReadID(uint8_t *MID, uint16_t *DID)
  */
 void W25Q64_WriteEnable(void)
 {
-	MySPI2_Start();						 // SPI起始
+	MySPI2_Start();						  // SPI起始
 	MySPI2_SwapByte(W25Q64_WRITE_ENABLE); // 交换发送写使能的指令
-	MySPI2_Stop();						 // SPI终止
+	MySPI2_Stop();						  // SPI终止
 }
 
 /**
@@ -48,9 +48,9 @@ void W25Q64_WriteEnable(void)
 void W25Q64_WaitBusy(void)
 {
 	uint32_t Timeout;
-	MySPI2_Start();											   // SPI起始
-	MySPI2_SwapByte(W25Q64_READ_STATUS_REGISTER_1);			   // 交换发送读状态寄存器1的指令
-	Timeout = 200000;										   // 给定超时计数时间
+	MySPI2_Start();												// SPI起始
+	MySPI2_SwapByte(W25Q64_READ_STATUS_REGISTER_1);				// 交换发送读状态寄存器1的指令
+	Timeout = 200000;											// 给定超时计数时间
 	while ((MySPI2_SwapByte(W25Q64_DUMMY_BYTE) & 0x01) == 0x01) // 循环等待忙标志位
 	{
 		Timeout--;		  // 等待时，计数值自减
@@ -77,12 +77,12 @@ void W25Q64_PageProgram(uint32_t Address, uint8_t *DataArray, uint16_t Count)
 
 	W25Q64_WriteEnable(); // 写使能
 
-	MySPI2_Start();						 // SPI起始
+	MySPI2_Start();						  // SPI起始
 	MySPI2_SwapByte(W25Q64_PAGE_PROGRAM); // 交换发送页编程的指令
-	MySPI2_SwapByte(Address >> 16);		 // 交换发送地址23~16位
-	MySPI2_SwapByte(Address >> 8);		 // 交换发送地址15~8位
-	MySPI2_SwapByte(Address);			 // 交换发送地址7~0位
-	for (i = 0; i < Count; i++)			 // 循环Count次
+	MySPI2_SwapByte(Address >> 16);		  // 交换发送地址23~16位
+	MySPI2_SwapByte(Address >> 8);		  // 交换发送地址15~8位
+	MySPI2_SwapByte(Address);			  // 交换发送地址7~0位
+	for (i = 0; i < Count; i++)			  // 循环Count次
 	{
 		MySPI2_SwapByte(DataArray[i]); // 依次在起始地址后写入数据
 	}
@@ -100,12 +100,12 @@ void W25Q64_SectorErase(uint32_t Address)
 {
 	W25Q64_WriteEnable(); // 写使能
 
-	MySPI2_Start();							 // SPI起始
+	MySPI2_Start();							  // SPI起始
 	MySPI2_SwapByte(W25Q64_SECTOR_ERASE_4KB); // 交换发送扇区擦除的指令
-	MySPI2_SwapByte(Address >> 16);			 // 交换发送地址23~16位
-	MySPI2_SwapByte(Address >> 8);			 // 交换发送地址15~8位
-	MySPI2_SwapByte(Address);				 // 交换发送地址7~0位
-	MySPI2_Stop();							 // SPI终止
+	MySPI2_SwapByte(Address >> 16);			  // 交换发送地址23~16位
+	MySPI2_SwapByte(Address >> 8);			  // 交换发送地址15~8位
+	MySPI2_SwapByte(Address);				  // 交换发送地址7~0位
+	MySPI2_Stop();							  // SPI终止
 
 	W25Q64_WaitBusy(); // 等待忙
 }
@@ -120,12 +120,12 @@ void W25Q64_SectorErase(uint32_t Address)
 void W25Q64_ReadData(uint32_t Address, uint8_t *DataArray, uint32_t Count)
 {
 	uint32_t i;
-	MySPI2_Start();					  // SPI起始
+	MySPI2_Start();					   // SPI起始
 	MySPI2_SwapByte(W25Q64_READ_DATA); // 交换发送读取数据的指令
-	MySPI2_SwapByte(Address >> 16);	  // 交换发送地址23~16位
-	MySPI2_SwapByte(Address >> 8);	  // 交换发送地址15~8位
-	MySPI2_SwapByte(Address);		  // 交换发送地址7~0位
-	for (i = 0; i < Count; i++)		  // 循环Count次
+	MySPI2_SwapByte(Address >> 16);	   // 交换发送地址23~16位
+	MySPI2_SwapByte(Address >> 8);	   // 交换发送地址15~8位
+	MySPI2_SwapByte(Address);		   // 交换发送地址7~0位
+	for (i = 0; i < Count; i++)		   // 循环Count次
 	{
 		DataArray[i] = MySPI2_SwapByte(W25Q64_DUMMY_BYTE); // 依次在起始地址后读取数据
 	}
@@ -138,9 +138,9 @@ void W25Q64_ChipErase(void)
 	W25Q64_WriteEnable();
 
 	// 2. 发送芯片擦除指令
-	MySPI2_Start();					   // SPI起始
+	MySPI2_Start();						// SPI起始
 	MySPI2_SwapByte(W25Q64_CHIP_ERASE); // 发送芯片擦除指令
-	MySPI2_Stop();					   // SPI终止
+	MySPI2_Stop();						// SPI终止
 
 	W25Q64_WaitBusy();
 }

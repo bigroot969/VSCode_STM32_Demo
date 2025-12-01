@@ -4,10 +4,10 @@
 #include "stm32f10x.h"
 
 // 编码器事件标志位
-#define ENCODER_CW          0x01    // 顺时针
-#define ENCODER_CCW         0x02    // 逆时针
-#define ENCODER_BTN_SINGLE  0x04    // 单击
-#define ENCODER_BTN_LONG    0x08    // 长按
+#define ENCODER_CW 0x01         // 顺时针
+#define ENCODER_CCW 0x02        // 逆时针
+#define ENCODER_BTN_SINGLE 0x04 // 单击
+#define ENCODER_BTN_LONG 0x08   // 长按
 
 // 兼容旧代码的枚举（可选，如果不再使用可删除）
 typedef enum
@@ -44,6 +44,3 @@ Encoder_ButtonState Encoder_GetButton(void);
 void Encoder_Tick(void);
 
 #endif
-
-
-

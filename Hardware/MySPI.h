@@ -26,7 +26,6 @@
 #define W25Q64_DI_PIN GPIO_Pin_15
 #define W25Q64_DI_PORT GPIOB
 
-
 void MySPI1_Init(void);
 void MySPI2_Init(void);
 void MySPI2_Start(void);

@@ -29,10 +29,10 @@ void PWM_Init(void)
 	TIM_TimeBaseInit(TIM3, &TIM_TimeBaseInitStructure);				// 将结构体变量交给TIM_TimeBaseInit，配置TIM3的时基单元
 
 	/*输出比较初始化*/
-	TIM_OCInitTypeDef TIM_OCInitStructure;	// 定义结构体变量
-	TIM_OCStructInit(&TIM_OCInitStructure); // 结构体初始化，若结构体没有完整赋值
-											// 则最好执行此函数，给结构体所有成员都赋一个默认值
-											// 避免结构体初值不确定的问题
+	TIM_OCInitTypeDef TIM_OCInitStructure;						  // 定义结构体变量
+	TIM_OCStructInit(&TIM_OCInitStructure);						  // 结构体初始化，若结构体没有完整赋值
+																  // 则最好执行此函数，给结构体所有成员都赋一个默认值
+																  // 避免结构体初值不确定的问题
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;			  // 输出比较模式，选择PWM模式1
 	TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_High;	  // 输出极性，选择为高，若选择极性为低，则输出高低电平取反
 	TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable; // 输出使能

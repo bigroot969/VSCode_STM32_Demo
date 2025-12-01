@@ -41,7 +41,7 @@ uint16_t LDR_Average_Data(void)
 	for (uint8_t i = 0; i < LDR_READ_TIMES; i++)
 	{
 		tempData += LDR_ADC_Read();
-		Delay_ms(5);
+		// Delay_ms(5); // 移除延时以提高响应速度
 	}
 
 	tempData /= LDR_READ_TIMES;

@@ -45,7 +45,7 @@ int Menu3_StopWatch(void);
 
 int Menu3_ShowGraph(void);
 
-void DrawStorageChart(uint8_t chartType, int16_t offset, uint8_t totalRecords);
+void DrawStorageChart(uint8_t chartType, int16_t offset, uint8_t totalRecords, uint8_t fullRedraw);
 
 int Menu4_Erase(void);
 

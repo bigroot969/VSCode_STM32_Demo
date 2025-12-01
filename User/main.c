@@ -31,7 +31,7 @@ int main()
 	// W25Q64_ChipErase(); // 擦除整个芯片（仅测试用，实际应用可注释掉）
 
 	// 编码器初始化(必须在Timer_Init之前，避免TIM4冲突)
-	//Encoder_Init(); // EC11编码器初始化(占用TIM4编码器模式)
+	// Encoder_Init(); // EC11编码器初始化(占用TIM4编码器模式)
 
 	// 定时器初始化(放在最后,因为会立即启动中断)
 	Timer_Init(); // TIM2初始化并启动定时中断(TIM4已被编码器占用)

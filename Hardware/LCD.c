@@ -3,6 +3,12 @@
 #include <stddef.h>
 #include <string.h>
 
+// 寄存器操作宏优化，替代库函数调用以提升速度
+#define LCD_CS_CLR() LCD_CS_PORT->BRR = LCD_CS_PIN
+#define LCD_CS_SET() LCD_CS_PORT->BSRR = LCD_CS_PIN
+#define LCD_RS_CLR() LCD_RS_PORT->BRR = LCD_RS_PIN
+#define LCD_RS_SET() LCD_RS_PORT->BSRR = LCD_RS_PIN
+
 // 内联辅助函数：等待 SPI 发送缓冲区空
 static inline void LCD_WaitTXE(void)
 {
@@ -26,37 +32,37 @@ static inline void LCD_SendByte(uint8_t byte)
 
 void LCD_SendCMD(uint8_t CMD)
 {
-    GPIO_ResetBits(LCD_CS_PORT, LCD_CS_PIN); // 选中屏幕
-    GPIO_ResetBits(LCD_RS_PORT, LCD_RS_PIN); // RS=0（命令）
+    LCD_CS_CLR(); // 选中屏幕
+    LCD_RS_CLR(); // RS=0（命令）
 
     LCD_SendByte(CMD);
     LCD_WaitBSY();
 
-    GPIO_SetBits(LCD_CS_PORT, LCD_CS_PIN); // 取消选中
+    LCD_CS_SET(); // 取消选中
 }
 
 void LCD_SendData(uint8_t Data)
 {
-    GPIO_ResetBits(LCD_CS_PORT, LCD_CS_PIN); // 选中屏幕
-    GPIO_SetBits(LCD_RS_PORT, LCD_RS_PIN);   // RS=1（数据）
+    LCD_CS_CLR(); // 选中屏幕
+    LCD_RS_SET(); // RS=1（数据）
 
     LCD_SendByte(Data);
     LCD_WaitBSY();
 
-    GPIO_SetBits(LCD_CS_PORT, LCD_CS_PIN); // 取消选中
+    LCD_CS_SET(); // 取消选中
 }
 
 void LCD_SendData16(uint16_t Data)
 {
-    GPIO_ResetBits(LCD_CS_PORT, LCD_CS_PIN); // 选中屏幕
-    GPIO_SetBits(LCD_RS_PORT, LCD_RS_PIN);   // RS=1（数据）
+    LCD_CS_CLR(); // 选中屏幕
+    LCD_RS_SET(); // RS=1（数据）
 
     // 先发送高 8 位，再发送低 8 位
     LCD_SendByte(Data >> 8);
     LCD_SendByte(Data & 0xFF);
     LCD_WaitBSY();
 
-    GPIO_SetBits(LCD_CS_PORT, LCD_CS_PIN); // 取消选中
+    LCD_CS_SET(); // 取消选中
 }
 
 void LCD_Reset(void)
@@ -216,24 +222,45 @@ void LCD_SetAddrWindow(uint16_t X0, uint16_t Y0, uint16_t X1, uint16_t Y1)
 
 void LCD_Fill(uint16_t Color)
 {
-    uint32_t i;
     uint8_t color_h = Color >> 8;
     uint8_t color_l = Color & 0xFF;
 
     LCD_SetAddrWindow(0, 0, LCD_WIDTH - 1, LCD_HEIGHT - 1); // 全屏窗口
 
-    GPIO_ResetBits(LCD_CS_PORT, LCD_CS_PIN);
-    GPIO_SetBits(LCD_RS_PORT, LCD_RS_PIN);
+    LCD_CS_CLR();
+    LCD_RS_SET();
 
     // 连续发送 128*160 个颜色数据
-    for (i = 0; i < LCD_WIDTH * LCD_HEIGHT; i++)
+    // 循环展开优化，减少循环判断开销
+    uint32_t total_pixels = LCD_WIDTH * LCD_HEIGHT;
+    while (total_pixels >= 8)
+    {
+        LCD_SendByte(color_h);
+        LCD_SendByte(color_l);
+        LCD_SendByte(color_h);
+        LCD_SendByte(color_l);
+        LCD_SendByte(color_h);
+        LCD_SendByte(color_l);
+        LCD_SendByte(color_h);
+        LCD_SendByte(color_l);
+        LCD_SendByte(color_h);
+        LCD_SendByte(color_l);
+        LCD_SendByte(color_h);
+        LCD_SendByte(color_l);
+        LCD_SendByte(color_h);
+        LCD_SendByte(color_l);
+        LCD_SendByte(color_h);
+        LCD_SendByte(color_l);
+        total_pixels -= 8;
+    }
+    while (total_pixels--)
     {
         LCD_SendByte(color_h);
         LCD_SendByte(color_l);
     }
     LCD_WaitBSY();
 
-    GPIO_SetBits(LCD_CS_PORT, LCD_CS_PIN);
+    LCD_CS_SET();
 }
 
 // 画点（x,y 坐标，color 颜色）
@@ -411,18 +438,40 @@ void LCD_DrawRectangle_Fill(uint16_t X1, uint16_t Y1, uint16_t X2, uint16_t Y2, 
     LCD_SetAddrWindow(X1, Y1, X2, Y2);
 
     // 填充矩形区域
-    GPIO_ResetBits(LCD_CS_PORT, LCD_CS_PIN);
-    GPIO_SetBits(LCD_RS_PORT, LCD_RS_PIN);
+    LCD_CS_CLR();
+    LCD_RS_SET();
 
     pixel_count = (uint32_t)(X2 - X1 + 1) * (Y2 - Y1 + 1);
-    for (uint32_t i = 0; i < pixel_count; i++)
+
+    // 循环展开优化
+    while (pixel_count >= 8)
+    {
+        LCD_SendByte(color_h);
+        LCD_SendByte(color_l);
+        LCD_SendByte(color_h);
+        LCD_SendByte(color_l);
+        LCD_SendByte(color_h);
+        LCD_SendByte(color_l);
+        LCD_SendByte(color_h);
+        LCD_SendByte(color_l);
+        LCD_SendByte(color_h);
+        LCD_SendByte(color_l);
+        LCD_SendByte(color_h);
+        LCD_SendByte(color_l);
+        LCD_SendByte(color_h);
+        LCD_SendByte(color_l);
+        LCD_SendByte(color_h);
+        LCD_SendByte(color_l);
+        pixel_count -= 8;
+    }
+    while (pixel_count--)
     {
         LCD_SendByte(color_h);
         LCD_SendByte(color_l);
     }
     LCD_WaitBSY();
 
-    GPIO_SetBits(LCD_CS_PORT, LCD_CS_PIN);
+    LCD_CS_SET();
 }
 
 // 显示单个 ASCII 字符
@@ -866,20 +915,20 @@ void LCD_ShowSignedNum(uint16_t X, uint16_t Y, int32_t Num, uint8_t FontSize, ui
     char buffer[13];
     uint8_t i = 0;
     uint8_t isNegative = 0;
-    
+
     if (Num < 0)
     {
         isNegative = 1;
         Num = -Num;
     }
-    
+
     // 如果指定了显示位数
     if (Digits > 0 && Digits <= 10)
     {
         char temp[11];
         uint8_t j = 0;
         uint32_t num_copy = Num;
-        
+
         if (num_copy == 0)
         {
             temp[j++] = '0';
@@ -892,7 +941,7 @@ void LCD_ShowSignedNum(uint16_t X, uint16_t Y, int32_t Num, uint8_t FontSize, ui
                 num_copy /= 10;
             }
         }
-        
+
         // 如果需要前导零，补齐位数
         if (LeadingZero)
         {
@@ -901,28 +950,28 @@ void LCD_ShowSignedNum(uint16_t X, uint16_t Y, int32_t Num, uint8_t FontSize, ui
                 temp[j++] = '0';
             }
         }
-        
+
         // 添加负号
         if (isNegative)
         {
             buffer[i++] = '-';
         }
-        
+
         // 反转数字到buffer
         for (uint8_t k = 0; k < j; k++)
         {
             buffer[i++] = temp[j - 1 - k];
         }
         buffer[i] = '\0';
-        
+
         LCD_ShowString(X, Y, buffer, FontSize, FColor, BColor, Center);
         return;
     }
-    
+
     // 原有逻辑：不指定位数时
     char *p = buffer + 12;
     *p = '\0';
-    
+
     if (Num == 0)
     {
         *(--p) = '0';
@@ -935,12 +984,12 @@ void LCD_ShowSignedNum(uint16_t X, uint16_t Y, int32_t Num, uint8_t FontSize, ui
             Num /= 10;
         }
     }
-    
+
     if (isNegative)
     {
         *(--p) = '-';
     }
-    
+
     LCD_ShowString(X, Y, p, FontSize, FColor, BColor, Center);
 }
 
@@ -960,18 +1009,18 @@ void LCD_ShowHexNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint
 {
     char buffer[13];
     char HexTable[] = "0123456789ABCDEF";
-    
+
     // 如果指定了显示位数
     if (Digits > 0 && Digits <= 8)
     {
         buffer[0] = '0';
         buffer[1] = 'x';
         uint8_t i = 2;
-        
+
         char temp[9];
         uint8_t j = 0;
         uint32_t num_copy = Num;
-        
+
         if (num_copy == 0)
         {
             temp[j++] = '0';
@@ -984,7 +1033,7 @@ void LCD_ShowHexNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint
                 num_copy >>= 4;
             }
         }
-        
+
         // 如果需要前导零，补齐位数
         if (LeadingZero)
         {
@@ -993,22 +1042,22 @@ void LCD_ShowHexNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint
                 temp[j++] = '0';
             }
         }
-        
+
         // 反转到buffer
         for (uint8_t k = 0; k < j; k++)
         {
             buffer[i++] = temp[j - 1 - k];
         }
         buffer[i] = '\0';
-        
+
         LCD_ShowString(X, Y, buffer, FontSize, FColor, BColor, Center);
         return;
     }
-    
+
     // 原有逻辑：不指定位数时
     char *p = buffer + 12;
     *p = '\0';
-    
+
     if (Num == 0)
     {
         *(--p) = '0';
@@ -1021,10 +1070,10 @@ void LCD_ShowHexNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint
             Num >>= 4;
         }
     }
-    
+
     *(--p) = 'x';
     *(--p) = '0';
-    
+
     LCD_ShowString(X, Y, p, FontSize, FColor, BColor, Center);
 }
 
@@ -1043,18 +1092,18 @@ void LCD_ShowHexNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint
 void LCD_ShowBinNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint16_t FColor, uint16_t BColor, uint8_t Center, uint8_t LeadingZero, uint8_t Digits)
 {
     char buffer[35];
-    
+
     // 如果指定了显示位数
     if (Digits > 0 && Digits <= 32)
     {
         buffer[0] = '0';
         buffer[1] = 'b';
         uint8_t i = 2;
-        
+
         char temp[33];
         uint8_t j = 0;
         uint32_t num_copy = Num;
-        
+
         if (num_copy == 0)
         {
             temp[j++] = '0';
@@ -1067,7 +1116,7 @@ void LCD_ShowBinNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint
                 num_copy >>= 1;
             }
         }
-        
+
         // 如果需要前导零，补齐位数
         if (LeadingZero)
         {
@@ -1076,22 +1125,22 @@ void LCD_ShowBinNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint
                 temp[j++] = '0';
             }
         }
-        
+
         // 反转到buffer
         for (uint8_t k = 0; k < j; k++)
         {
             buffer[i++] = temp[j - 1 - k];
         }
         buffer[i] = '\0';
-        
+
         LCD_ShowString(X, Y, buffer, FontSize, FColor, BColor, Center);
         return;
     }
-    
+
     // 原有逻辑：不指定位数时
     char *p = buffer + 34;
     *p = '\0';
-    
+
     if (Num == 0)
     {
         *(--p) = '0';
@@ -1104,10 +1153,10 @@ void LCD_ShowBinNum(uint16_t X, uint16_t Y, uint32_t Num, uint8_t FontSize, uint
             Num >>= 1;
         }
     }
-    
+
     *(--p) = 'b';
     *(--p) = '0';
-    
+
     LCD_ShowString(X, Y, p, FontSize, FColor, BColor, Center);
 }
 
