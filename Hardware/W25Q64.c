@@ -1,6 +1,7 @@
 #include "stm32f10x.h" // Device header
 #include "MySPI.h"
 #include "W25Q64_Ins.h"
+#include "IWDG.h"
 /**
  * 函    数：W25Q64初始化
  * 参    数：无
@@ -44,16 +45,27 @@ void W25Q64_WriteEnable(void)
  * 函    数：W25Q64等待忙
  * 参    数：无
  * 返 回 值：无
+ * @note   等待期间会定期喂狗，防止看门狗复位
  */
 void W25Q64_WaitBusy(void)
 {
 	uint32_t Timeout;
+	uint32_t feedCounter = 0;
 	MySPI2_Start();												// SPI起始
 	MySPI2_SwapByte(W25Q64_READ_STATUS_REGISTER_1);				// 交换发送读状态寄存器1的指令
 	Timeout = 200000;											// 给定超时计数时间
 	while ((MySPI2_SwapByte(W25Q64_DUMMY_BYTE) & 0x01) == 0x01) // 循环等待忙标志位
 	{
 		Timeout--;		  // 等待时，计数值自减
+		feedCounter++;
+		
+		// 每隔10000次循环喂一次狗 (约每50ms)
+		if (feedCounter >= 10000)
+		{
+			IWDG_Feed();
+			feedCounter = 0;
+		}
+		
 		if (Timeout == 0) // 自减到0后，等待超时
 		{
 			/*超时的错误处理代码，可以添加到此处*/

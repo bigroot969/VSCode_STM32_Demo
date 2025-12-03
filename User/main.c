@@ -1,6 +1,7 @@
 #include "Menu.h"
 #include "Timer.h"
 #include "Encoder.h"
+#include "IWDG.h"
 
 uint8_t PageFlag;
 extern uint8_t ToggleSaveFlag;
@@ -30,16 +31,19 @@ int main()
 	DataStorage_New_Init(); // 数据存储初始化(包含W25Q64和SPI2初始化)
 	// W25Q64_ChipErase(); // 擦除整个芯片（仅测试用，实际应用可注释掉）
 
-	// 编码器初始化(必须在Timer_Init之前，避免TIM4冲突)
-	// Encoder_Init(); // EC11编码器初始化(占用TIM4编码器模式)
-
 	// 定时器初始化(放在最后,因为会立即启动中断)
 	Timer_Init(); // TIM2初始化并启动定时中断(TIM4已被编码器占用)
 	LED_Init();	  // LED初始化
 	LED_ON();
 
+	// 初始化独立看门狗 (2秒超时)
+	IWDG_Init(2000);
+
 	while (1)
 	{
+		// 喂狗 - 必须在主循环开始处调用
+		IWDG_Feed();
+
 		PageFlag = Menu1();
 		if (PageFlag == 1)
 		{
@@ -58,9 +62,14 @@ int main()
 			Menu2_Setting();
 		}
 		// 主菜单中的自动存储处理
-		if (SaveFlag == 1 && ToggleSaveFlag == 1)
-		{
+		__disable_irq(); // 临时关闭中断
+		uint8_t needSave = (SaveFlag == 1 && ToggleSaveFlag == 1);
+		if (needSave)
 			SaveFlag = 0;
+		__enable_irq(); // 恢复中断
+
+		if (needSave)
+		{
 			MyRTC_ReadTime();
 			CurrentTime.Year = MyRTC_Time[0];
 			CurrentTime.Month = MyRTC_Time[1];
