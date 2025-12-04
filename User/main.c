@@ -5,9 +5,9 @@
 
 uint8_t PageFlag;
 extern uint8_t ToggleSaveFlag;
-extern uint8_t SaveFlag;
-extern float Temp;
-extern uint16_t Light;
+extern volatile uint8_t SaveFlag;
+extern volatile float Temp;
+extern volatile uint16_t Light;
 extern DateTime_New CurrentTime;
 
 int main()

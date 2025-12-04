@@ -1,5 +1,6 @@
 #include "DataStorage.h"
 #include <string.h>
+#include "IWDG.h"
 
 // 内部全局变量（简化设计：只在RAM中维护）
 static uint8_t g_MaxRecordCount = MAX_RECORD_COUNT;    // 最大记录数（默认最大值）
@@ -257,6 +258,7 @@ void DataStorage_New_EraseAll(void)
     {
         W25Q64_SectorErase(STORAGE_DATA_START_ADDR + i * SECTOR_SIZE);
         W25Q64_WaitBusy();
+        IWDG_Feed(); // 喂狗，防止长时间擦除导致复位
     }
 
     // 重置计数（保持用户设置的最大记录数不变）

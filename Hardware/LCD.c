@@ -2,6 +2,7 @@
 #include "Delay.h"
 #include <stddef.h>
 #include <string.h>
+#include "IWDG.h"
 
 // 寄存器操作宏优化，替代库函数调用以提升速度
 #define LCD_CS_CLR() LCD_CS_PORT->BRR = LCD_CS_PIN
@@ -1276,6 +1277,7 @@ void LCD_ShowChinese(uint16_t X, uint16_t Y, const char *Chinese, uint8_t FontSi
 
     while (Chinese[i] != '\0') // 遍历字符串
     {
+        IWDG_Feed(); // 喂狗，防止长字符串显示导致复位
 #ifdef LCD_CHARSET_UTF8 // 定义字符集为UTF8
         /*此段代码的目的是，提取UTF8字符串中的一个字符，转存到SingleChar子字符串中*/
         /*判断UTF8编码第一个字节的标志位*/

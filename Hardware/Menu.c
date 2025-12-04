@@ -16,10 +16,11 @@ int TempValue = 35;
 uint8_t ToggleSaveFlag = 0;
 uint8_t NowTotalRecords;
 uint8_t ShowRecordID = 0;
-float Temp = 0;
-uint16_t Light = 0;
+volatile float Temp = 0;
+volatile uint16_t Light = 0;
 volatile uint8_t SaveFlag = 0;
 volatile int TimerCount = 0;
+volatile uint32_t SystemTick = 0; // 系统滴答计数器(1ms)
 
 // 辅助函数：原子读取并清零SaveFlag
 static inline uint8_t SaveFlag_ReadAndClear(void)
@@ -75,9 +76,9 @@ static void Menu2_Setting_Redraw(void)
 // 存储状态枚举
 typedef enum
 {
-	STORAGE_STATE_IDLE = 0,   // 空闲/已停止
+	STORAGE_STATE_IDLE = 0,	  // 空闲/已停止
 	STORAGE_STATE_SAVING = 1, // 存储中
-	STORAGE_STATE_FULL = 2    // 已满
+	STORAGE_STATE_FULL = 2	  // 已满
 } StorageState_t;
 
 // 辅助函数：更新存储状态显示
@@ -87,15 +88,15 @@ static void Menu_UpdateStorageStatus(uint8_t *lastState, uint16_t yPos)
 {
 	uint8_t recordCount = DataStorage_New_GetCount();
 	uint8_t maxCount = DataStorage_New_GetMaxCount();
-	
+
 	// 计算当前状态
 	StorageState_t currentState;
 	if (ToggleSaveFlag && recordCount < maxCount)
 		currentState = STORAGE_STATE_SAVING; // 开启且未满
 	else if (recordCount >= maxCount)
-		currentState = STORAGE_STATE_FULL;   // 已满
+		currentState = STORAGE_STATE_FULL; // 已满
 	else
-		currentState = STORAGE_STATE_IDLE;   // 关闭或其他
+		currentState = STORAGE_STATE_IDLE; // 关闭或其他
 
 	// 仅在状态变化时更新显示
 	if (currentState != *lastState)
@@ -212,8 +213,9 @@ int Menu2_Stats(void) // 二级菜单
 
 	// 状态缓存变量
 	uint8_t LastTime[6] = {0};
-	uint16_t LastLight = 0xFFFF; // 初始值设为无效值以触发首次显示
-	float LastTemp = -999.0;	 // 初始值设为无效值
+	uint16_t LastLight = 0xFFFF;	  // 初始值设为无效值以触发首次显示
+	float LastTemp = -999.0;		  // 初始值设为无效值
+	uint32_t LastLightUpdateTick = 0; // 光照刷新计时器
 
 	LCD_Clear(WHITE);
 	LCD_ShowChinese(0, 0, "状态信息", LCD_16X16, BLACK, WHITE, 1);
@@ -325,10 +327,15 @@ int Menu2_Stats(void) // 二级菜单
 		// 显示数值（仅在数值变化或报警状态变化时更新）
 		uint16_t displayColor = CurrentAlarmState ? RED : BLACK;
 
-		if (firstRun || Light != LastLight)
+		// 光照显示：增加200ms刷新延迟限制
+		if (firstRun || (SystemTick - LastLightUpdateTick >= 200))
 		{
-			LCD_ShowNum(88, 80, Light, LCD_8X16, displayColor, WHITE, 0, 1, 3);
-			LastLight = Light;
+			if (Light != LastLight)
+			{
+				LCD_ShowNum(88, 80, Light, LCD_8X16, displayColor, WHITE, 0, 1, 3);
+				LastLight = Light;
+			}
+			LastLightUpdateTick = SystemTick;
 		}
 
 		if (firstRun || Temp != LastTemp)
@@ -934,6 +941,7 @@ int Menu2_History(void)
 			{
 				Menu2_History_Redraw();
 				// 恢复存储状态显示
+				lastStorageState = 0xFF;
 				Menu_UpdateStorageStatus(&lastStorageState, 140);
 				lastHisFlag = 0xFF;
 				lastRecordCount = NowTotalRecords;
@@ -946,6 +954,7 @@ int Menu2_History(void)
 			{
 				Menu2_History_Redraw();
 				// 恢复存储状态显示
+				lastStorageState = 0xFF;
 				Menu_UpdateStorageStatus(&lastStorageState, 140);
 				lastHisFlag = 0xFF;
 				lastRecordCount = NowTotalRecords;
@@ -958,6 +967,7 @@ int Menu2_History(void)
 			{
 				Menu2_History_Redraw();
 				// 恢复存储状态显示
+				lastStorageState = 0xFF;
 				Menu_UpdateStorageStatus(&lastStorageState, 140);
 				lastHisFlag = 0xFF;
 				lastRecordCount = NowTotalRecords;
@@ -1925,6 +1935,9 @@ void DrawStorageChart(uint8_t chartType, int16_t offset, uint8_t totalRecords, u
 	// 第一遍扫描：找出最大最小值
 	for (uint8_t i = 0; i < displayCount; i++)
 	{
+		if (i % 10 == 0)
+			IWDG_Feed(); // 每10个点喂一次狗
+
 		uint8_t index = offset + i; // 记录索引从0开始
 
 		if (DataStorage_New_Read(index, &SensorData_New) == 0)
@@ -2412,6 +2425,7 @@ void TIM4_IRQHandler(void)
 {
 	if (TIM_GetITStatus(TIM4, TIM_IT_Update) == SET)
 	{
+		SystemTick++; // 增加系统滴答计数
 		Key_Tick();
 		StopWatch_Tick();
 		Buzzer_Tick();
