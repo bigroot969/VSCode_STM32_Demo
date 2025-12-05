@@ -13,32 +13,32 @@
 #include "Encoder.h"
 #include "stdio.h"
 
-// èœå•å¸¸é‡å®šä¹‰
-#define MENU_DELAY_NO_DATA_MS    2000  // æ— æ•°æ®æç¤ºå»¶æ—¶(æ¯«ç§’)
-#define MENU_DELAY_ERASE_SEC     3     // æ“¦é™¤å®Œæˆå»¶æ—¶(ç§’)
-#define MENU_MAIN_ITEM_COUNT     4     // ä¸»èœå•é¡¹æ•°
-#define MENU_HISTORY_ITEM_COUNT  4     // åŽ†å²èœå•é¡¹æ•°
-#define MENU_SETTING_ITEM_COUNT  7     // è®¾ç½®èœå•é¡¹æ•°
-#define MENU_FUNCTION_ITEM_COUNT 3     // åŠŸèƒ½èœå•é¡¹æ•°
-#define ALARM_BEEP_DURATION      5     // æŠ¥è­¦èœ‚é¸£æŒç»­æ—¶é—´(ç§’)
-#define INVALID_MARKER           0xFF  // æœªåˆå§‹åŒ–æ ‡è®°å€¼
+// ²Ëµ¥³£Á¿¶¨Òå
+#define MENU_DELAY_NO_DATA_MS    2000  // ÎÞÊý¾ÝÌáÊ¾ÑÓÊ±(ºÁÃë)
+#define MENU_DELAY_ERASE_SEC     3     // ²Á³ýÍê³ÉÑÓÊ±(Ãë)
+#define MENU_MAIN_ITEM_COUNT     4     // Ö÷²Ëµ¥ÏîÊý
+#define MENU_HISTORY_ITEM_COUNT  4     // ÀúÊ·²Ëµ¥ÏîÊý
+#define MENU_SETTING_ITEM_COUNT  7     // ÉèÖÃ²Ëµ¥ÏîÊý
+#define MENU_FUNCTION_ITEM_COUNT 3     // ¹¦ÄÜ²Ëµ¥ÏîÊý
+#define ALARM_BEEP_DURATION      5     // ±¨¾¯·äÃù³ÖÐøÊ±¼ä(Ãë)
+#define INVALID_MARKER           0xFF  // Î´³õÊ¼»¯±ê¼ÇÖµ
 
-// ä¼ æ„Ÿå™¨èŒƒå›´é™åˆ¶
-#define LIGHT_SENSOR_MAX     999    // å…‰ç…§ä¼ æ„Ÿå™¨æœ€å¤§å€¼
-#define TEMP_SENSOR_MAX      115    // æ¸©åº¦ä¼ æ„Ÿå™¨æœ€å¤§å€¼ (Â°C)
-#define TEMP_SENSOR_MIN      (-40)  // æ¸©åº¦ä¼ æ„Ÿå™¨æœ€å°å€¼ (Â°C)
+// ´«¸ÐÆ÷·¶Î§ÏÞÖÆ
+#define LIGHT_SENSOR_MAX     999    // ¹âÕÕ´«¸ÐÆ÷×î´óÖµ
+#define TEMP_SENSOR_MAX      115    // ÎÂ¶È´«¸ÐÆ÷×î´óÖµ (¡ãC)
+#define TEMP_SENSOR_MIN      (-40)  // ÎÂ¶È´«¸ÐÆ÷×îÐ¡Öµ (¡ãC)
 
-// æ—¶é—´ç›¸å…³å¸¸é‡
-#define TIME_SECONDS_PER_MINUTE  60  // æ¯åˆ†é’Ÿç§’æ•°
-#define TIME_MINUTES_PER_HOUR    60  // æ¯å°æ—¶åˆ†é’Ÿæ•°
-#define TIME_HOURS_PER_DAY       24  // æ¯å¤©å°æ—¶æ•°
-#define TIME_MAX_HOUR            23  // æœ€å¤§å°æ—¶å€¼
-#define TIME_MAX_MIN_SEC         59  // æœ€å¤§åˆ†é’Ÿ/ç§’å€¼
-#define STOPWATCH_MAX_HOUR       99  // ç§’è¡¨æœ€å¤§å°æ—¶æ•°
+// Ê±¼äÏà¹Ø³£Á¿
+#define TIME_SECONDS_PER_MINUTE  60  // Ã¿·ÖÖÓÃëÊý
+#define TIME_MINUTES_PER_HOUR    60  // Ã¿Ð¡Ê±·ÖÖÓÊý
+#define TIME_HOURS_PER_DAY       24  // Ã¿ÌìÐ¡Ê±Êý
+#define TIME_MAX_HOUR            23  // ×î´óÐ¡Ê±Öµ
+#define TIME_MAX_MIN_SEC         59  // ×î´ó·ÖÖÓ/ÃëÖµ
+#define STOPWATCH_MAX_HOUR       99  // Ãë±í×î´óÐ¡Ê±Êý
 
-// è°ƒæ•´æ­¥é•¿é™åˆ¶
-#define STEP_LENGTH_MAX     100  // å•æ¬¡è°ƒæ•´æœ€å¤§æ­¥é•¿
-#define STEP_LENGTH_MIN     1    // å•æ¬¡è°ƒæ•´æœ€å°æ­¥é•¿
+// µ÷Õû²½³¤ÏÞÖÆ
+#define STEP_LENGTH_MAX     100  // µ¥´Îµ÷Õû×î´ó²½³¤
+#define STEP_LENGTH_MIN     1    // µ¥´Îµ÷Õû×îÐ¡²½³¤
 
 int Menu1(void);
 

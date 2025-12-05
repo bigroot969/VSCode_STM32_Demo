@@ -8,7 +8,7 @@ extern uint8_t ToggleSaveFlag;
 extern volatile uint8_t SaveFlag;
 extern volatile float Temp;
 extern volatile uint16_t Light;
-extern DateTime_New CurrentTime;
+extern DateTime CurrentTime;
 
 int main()
 {
@@ -28,7 +28,7 @@ int main()
 
 	// 时间和存储初始化
 	MyRTC_Init();			// RTC初始化
-	DataStorage_New_Init(); // 数据存储初始化(包含W25Q64和SPI2初始化)
+	DataStorage_Init(); // 数据存储初始化(包含W25Q64和SPI2初始化)
 	// W25Q64_ChipErase(); // 擦除整个芯片（仅测试用，实际应用可注释掉）
 
 	// 定时器初始化(放在最后,因为会立即启动中断)
@@ -80,7 +80,7 @@ int main()
 			Temp = DS18B20_Get_Temp();
 			Light = LDR_LuxData();
 			LCD_ShowChinese(80, 140, "存储中", LCD_16X16, BLUE2, WHITE, 1);
-			uint8_t saveResult = DataStorage_New_Save(Temp, Light, &CurrentTime);
+			uint8_t saveResult = DataStorage_Save(Temp, Light, &CurrentTime);
 			if (saveResult == 1)
 			{
 				LCD_ShowChinese(80, 140, " 已满 ", LCD_16X16, RED, WHITE, 1);

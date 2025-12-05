@@ -2,25 +2,25 @@
 #include "IWDG.h"
 
 /**
- * @brief  å¾®ç§’çº§å»¶æ—¶
- * @param  xus å»¶æ—¶æ—¶é•¿ï¼ŒèŒƒå›´ï¼š0~233015
- * @retval æ— 
+ * @brief  Î¢Ãë¼¶ÑÓÊ±
+ * @param  xus ÑÓÊ±Ê±³¤£¬·¶Î§£º0~233015
+ * @retval ÎŞ
  */
 void Delay_us(uint32_t xus)
 {
-	SysTick->LOAD = 72 * xus;	// è®¾ç½®å®šæ—¶å™¨é‡è£…å€¼
-	SysTick->VAL = 0x00;		// æ¸…ç©ºå½“å‰è®¡æ•°å€¼
-	SysTick->CTRL = 0x00000005; // è®¾ç½®æ—¶é’Ÿæºä¸ºHCLKï¼Œå¯åŠ¨å®šæ—¶å™¨
+	SysTick->LOAD = 72 * xus;	// ÉèÖÃ¶¨Ê±Æ÷ÖØ×°Öµ
+	SysTick->VAL = 0x00;		// Çå¿Õµ±Ç°¼ÆÊıÖµ
+	SysTick->CTRL = 0x00000005; // ÉèÖÃÊ±ÖÓÔ´ÎªHCLK£¬Æô¶¯¶¨Ê±Æ÷
 	while (!(SysTick->CTRL & 0x00010000))
-		;						// ç­‰å¾…è®¡æ•°åˆ°0
-	SysTick->CTRL = 0x00000004; // å…³é—­å®šæ—¶å™¨
+		;						// µÈ´ı¼ÆÊıµ½0
+	SysTick->CTRL = 0x00000004; // ¹Ø±Õ¶¨Ê±Æ÷
 }
 
 /**
- * @brief  æ¯«ç§’çº§å»¶æ—¶
- * @param  xms å»¶æ—¶æ—¶é•¿ï¼ŒèŒƒå›´ï¼š0~4294967295
- * @retval æ— 
- * @note   æ¯éš”500mså–‚ä¸€æ¬¡ç‹—ï¼Œé˜²æ­¢çœ‹é—¨ç‹—å¤ä½
+ * @brief  ºÁÃë¼¶ÑÓÊ±
+ * @param  xms ÑÓÊ±Ê±³¤£¬·¶Î§£º0~4294967295
+ * @retval ÎŞ
+ * @note   Ã¿¸ô500msÎ¹Ò»´Î¹·£¬·ÀÖ¹¿´ÃÅ¹·¸´Î»
  */
 void Delay_ms(uint32_t xms)
 {
@@ -29,7 +29,7 @@ void Delay_ms(uint32_t xms)
 	{
 		Delay_us(1000);
 		feedCounter++;
-		// æ¯éš”500mså–‚ä¸€æ¬¡ç‹—
+		// Ã¿¸ô500msÎ¹Ò»´Î¹·
 		if (feedCounter >= 500)
 		{
 			IWDG_Feed();
@@ -39,16 +39,16 @@ void Delay_ms(uint32_t xms)
 }
 
 /**
- * @brief  ç§’çº§å»¶æ—¶
- * @param  xs å»¶æ—¶æ—¶é•¿ï¼ŒèŒƒå›´ï¼š0~4294967295
- * @retval æ— 
- * @note   æ¯ç§’å–‚ä¸€æ¬¡ç‹—ï¼Œé˜²æ­¢çœ‹é—¨ç‹—å¤ä½
+ * @brief  Ãë¼¶ÑÓÊ±
+ * @param  xs ÑÓÊ±Ê±³¤£¬·¶Î§£º0~4294967295
+ * @retval ÎŞ
+ * @note   Ã¿ÃëÎ¹Ò»´Î¹·£¬·ÀÖ¹¿´ÃÅ¹·¸´Î»
  */
 void Delay_s(uint32_t xs)
 {
 	while (xs--)
 	{
 		Delay_ms(1000);
-		IWDG_Feed(); // æ¯ç§’å–‚ä¸€æ¬¡ç‹—
+		IWDG_Feed(); // Ã¿ÃëÎ¹Ò»´Î¹·
 	}
 }

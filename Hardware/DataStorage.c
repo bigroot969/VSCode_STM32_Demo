@@ -10,9 +10,9 @@ static uint8_t g_CurrentRecordCount = 0; // 当前已存储记录数（通过扫描得出）
  * @brief  初始化存储系统（简化版）
  * @note   直接扫描Flash，确定当前记录数
  */
-void DataStorage_New_Init(void)
+void DataStorage_Init(void)
 {
-    SensorData_New temp;
+    SensorData temp;
     uint16_t configData[2]; // [0]=Magic, [1]=MaxRecordCount
 
     // 初始化W25Q64
@@ -34,11 +34,11 @@ void DataStorage_New_Init(void)
     g_CurrentRecordCount = 0;
 
     // 检查第一条记录位置，如果Index不是1且不是0xFF，说明Flash未正确初始化
-    W25Q64_ReadData(STORAGE_DATA_START_ADDR, (uint8_t *)&temp, RECORD_SIZE_NEW);
+    W25Q64_ReadData(STORAGE_DATA_START_ADDR, (uint8_t *)&temp, RECORD_SIZE);
     if (temp.Index != 1 && temp.Index != 0xFF)
     {
         // Flash数据异常，全部擦除
-        DataStorage_New_EraseAll();
+        DataStorage_EraseAll();
         return;
     }
 
@@ -46,7 +46,7 @@ void DataStorage_New_Init(void)
     uint8_t indexBuf;
     for (uint8_t i = 0; i < g_MaxRecordCount; i++)
     {
-        uint32_t addr = STORAGE_DATA_START_ADDR + i * RECORD_SIZE_NEW;
+        uint32_t addr = STORAGE_DATA_START_ADDR + i * RECORD_SIZE;
         // 优化：只读取第一个字节(Index)来判断是否为空，减少SPI通信量
         W25Q64_ReadData(addr, &indexBuf, 1);
 
@@ -65,7 +65,7 @@ void DataStorage_New_Init(void)
    * @param  time: 时间结构体指针
    * @retval 0-成功，1-失败（存储满/参数无效/写入失败）
    */
-uint8_t DataStorage_New_Save(float temp, uint16_t light, const DateTime_New *time)
+uint8_t DataStorage_Save(float temp, uint16_t light, const DateTime *time)
 {
     // 参数检查
     if (!time)
@@ -80,8 +80,8 @@ uint8_t DataStorage_New_Save(float temp, uint16_t light, const DateTime_New *tim
     }
 
     // 计算存储地址
-    uint32_t addr = STORAGE_DATA_START_ADDR + g_CurrentRecordCount * RECORD_SIZE_NEW;
-    uint32_t endAddr = addr + RECORD_SIZE_NEW - 1;
+    uint32_t addr = STORAGE_DATA_START_ADDR + g_CurrentRecordCount * RECORD_SIZE;
+    uint32_t endAddr = addr + RECORD_SIZE - 1;
 
     // 计算涉及的扇区
     uint32_t startSector = (addr / SECTOR_SIZE) * SECTOR_SIZE;
@@ -91,8 +91,8 @@ uint8_t DataStorage_New_Save(float temp, uint16_t light, const DateTime_New *tim
     uint32_t prevEndSector = 0xFFFFFFFF;
     if (g_CurrentRecordCount > 0)
     {
-        uint32_t prevAddr = STORAGE_DATA_START_ADDR + (g_CurrentRecordCount - 1) * RECORD_SIZE_NEW;
-        uint32_t prevEndAddr = prevAddr + RECORD_SIZE_NEW - 1;
+        uint32_t prevAddr = STORAGE_DATA_START_ADDR + (g_CurrentRecordCount - 1) * RECORD_SIZE;
+        uint32_t prevEndAddr = prevAddr + RECORD_SIZE - 1;
         prevEndSector = (prevEndAddr / SECTOR_SIZE) * SECTOR_SIZE;
     }
 
@@ -111,7 +111,7 @@ uint8_t DataStorage_New_Save(float temp, uint16_t light, const DateTime_New *tim
     }
 
     // 填充数据
-    SensorData_New data;
+    SensorData data;
     data.Index = g_CurrentRecordCount + 1;
     data.Temp = (int16_t)(temp * 10);
     data.Light = (light > 999) ? 999 : light;
@@ -126,17 +126,17 @@ uint8_t DataStorage_New_Save(float temp, uint16_t light, const DateTime_New *tim
     uint32_t pageAddr = (addr / 256) * 256; // 当前页起始地址
     uint32_t pageEnd = pageAddr + 256;      // 当前页结束地址
 
-    if (addr + RECORD_SIZE_NEW <= pageEnd)
+    if (addr + RECORD_SIZE <= pageEnd)
     {
         // 不跨页，直接写入
-        W25Q64_PageProgram(addr, (uint8_t *)&data, RECORD_SIZE_NEW);
+        W25Q64_PageProgram(addr, (uint8_t *)&data, RECORD_SIZE);
         W25Q64_WaitBusy();
     }
     else
     {
         // 跨页，分两次写入
         uint8_t firstPartSize = pageEnd - addr; // 第一页剩余空间
-        uint8_t secondPartSize = RECORD_SIZE_NEW - firstPartSize;
+        uint8_t secondPartSize = RECORD_SIZE - firstPartSize;
 
         // 写入第一部分
         W25Q64_PageProgram(addr, (uint8_t *)&data, firstPartSize);
@@ -148,8 +148,8 @@ uint8_t DataStorage_New_Save(float temp, uint16_t light, const DateTime_New *tim
     }
 
     // 读回验证
-    SensorData_New verify;
-    W25Q64_ReadData(addr, (uint8_t *)&verify, RECORD_SIZE_NEW);
+    SensorData verify;
+    W25Q64_ReadData(addr, (uint8_t *)&verify, RECORD_SIZE);
 
     // 验证Index和关键数据
     if (verify.Index != data.Index)
@@ -169,15 +169,15 @@ uint8_t DataStorage_New_Save(float temp, uint16_t light, const DateTime_New *tim
  * @param  data: 数据结构体指针
  * @retval 0-成功，1-失败
  */
-uint8_t DataStorage_New_Read(uint8_t index, SensorData_New *data)
+uint8_t DataStorage_Read(uint8_t index, SensorData *data)
 {
     if (!data || index >= g_CurrentRecordCount)
     {
         return 1;
     }
 
-    uint32_t addr = STORAGE_DATA_START_ADDR + index * RECORD_SIZE_NEW;
-    W25Q64_ReadData(addr, (uint8_t *)data, RECORD_SIZE_NEW);
+    uint32_t addr = STORAGE_DATA_START_ADDR + index * RECORD_SIZE;
+    W25Q64_ReadData(addr, (uint8_t *)data, RECORD_SIZE);
 
     // 简单验证：Index应该匹配
     if (data->Index != (index + 1))
@@ -191,7 +191,7 @@ uint8_t DataStorage_New_Read(uint8_t index, SensorData_New *data)
 /**
  * @brief  获取当前记录数
  */
-uint8_t DataStorage_New_GetCount(void)
+uint8_t DataStorage_GetCount(void)
 {
     return g_CurrentRecordCount;
 }
@@ -199,7 +199,7 @@ uint8_t DataStorage_New_GetCount(void)
 /**
  * @brief  获取最大记录数（固定250）
  */
-uint8_t DataStorage_New_GetMaxCount(void)
+uint8_t DataStorage_GetMaxCount(void)
 {
     return g_MaxRecordCount;
 }
@@ -209,7 +209,7 @@ uint8_t DataStorage_New_GetMaxCount(void)
  * @param  maxCount: 最大记录数（1-250）
  * @retval 0-成功，1-失败
  */
-uint8_t DataStorage_New_SetMaxCount(uint8_t maxCount)
+uint8_t DataStorage_SetMaxCount(uint8_t maxCount)
 {
     if (maxCount < 1 || maxCount > MAX_RECORD_COUNT)
     {
@@ -248,10 +248,10 @@ uint8_t DataStorage_New_SetMaxCount(uint8_t maxCount)
 /**
  * @brief  擦除所有数据
  */
-void DataStorage_New_EraseAll(void)
+void DataStorage_EraseAll(void)
 {
     // 计算需要擦除的扇区数
-    uint32_t sectorsNeeded = (MAX_RECORD_COUNT * RECORD_SIZE_NEW + SECTOR_SIZE - 1) / SECTOR_SIZE;
+    uint32_t sectorsNeeded = (MAX_RECORD_COUNT * RECORD_SIZE + SECTOR_SIZE - 1) / SECTOR_SIZE;
 
     // 擦除所有数据扇区
     for (uint32_t i = 0; i < sectorsNeeded; i++)
@@ -269,7 +269,7 @@ void DataStorage_New_EraseAll(void)
 /**
  * @brief  检查存储是否已满
  */
-uint8_t DataStorage_New_IsFull(void)
+uint8_t DataStorage_IsFull(void)
 {
     return (g_CurrentRecordCount >= g_MaxRecordCount) ? 1 : 0;
 }

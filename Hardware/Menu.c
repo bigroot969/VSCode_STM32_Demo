@@ -5,7 +5,7 @@
 uint8_t Music = 1;
 extern int MyRTC_Time[];
 int SaveInterval_Time[3];
-DateTime_New CurrentTime;
+DateTime CurrentTime;
 int SaveInterval = TIME_SECONDS_PER_MINUTE;
 uint8_t StopWatchStartFlag = 0;
 uint8_t hour, minute, second;
@@ -43,10 +43,10 @@ static void Menu2_History_Redraw(void)
 	LCD_ShowChinese(0, 60, "数据图表", LCD_16X16, BLACK, WHITE, 0);
 	LCD_ShowChinese(0, 80, "擦除数据", LCD_16X16, BLACK, WHITE, 0);
 	LCD_ShowChinese(0, 100, "记录数", LCD_16X16, BLACK, WHITE, 0);
-	NowTotalRecords = DataStorage_New_GetCount();
+	NowTotalRecords = DataStorage_GetCount();
 	LCD_ShowNum(64, 100, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 1, 3);
 	LCD_ShowString(88, 100, "/", LCD_8X16, BLACK, WHITE, 0);
-	LCD_ShowNum(96, 100, DataStorage_New_GetMaxCount(), LCD_8X16, BLACK, WHITE, 0, 1, 3);
+	LCD_ShowNum(96, 100, DataStorage_GetMaxCount(), LCD_8X16, BLACK, WHITE, 0, 1, 3);
 }
 
 // 菜单重绘辅助函数：功能菜单
@@ -86,8 +86,8 @@ typedef enum
 // @param yPos: 显示的Y坐标（默认140，Menu3_AutoSaveSet使用140）
 static void Menu_UpdateStorageStatus(uint8_t *lastState, uint16_t yPos)
 {
-	uint8_t recordCount = DataStorage_New_GetCount();
-	uint8_t maxCount = DataStorage_New_GetMaxCount();
+	uint8_t recordCount = DataStorage_GetCount();
+	uint8_t maxCount = DataStorage_GetMaxCount();
 
 	// 计算当前状态
 	StorageState_t currentState;
@@ -122,7 +122,7 @@ static void Menu2_Setting_UpdateValues(void)
 {
 	LCD_ShowNum(72, 80, LightValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	LCD_ShowSignedNum(72, 100, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
-	LCD_ShowNum(72, 120, DataStorage_New_GetMaxCount(), LCD_8X16, BLACK, WHITE, 0, 0, 0);
+	LCD_ShowNum(72, 120, DataStorage_GetMaxCount(), LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	LCD_ShowNum(72, 140, StepLength, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 }
 
@@ -276,7 +276,7 @@ int Menu2_Stats(void) // 二级菜单
 			// 读取实时传感器数据
 			float tempData = DS18B20_Get_Temp();
 			uint16_t lightData = LDR_LuxData();
-			uint8_t saveResult = DataStorage_New_Save(tempData, lightData, &CurrentTime);
+			uint8_t saveResult = DataStorage_Save(tempData, lightData, &CurrentTime);
 			if (saveResult == 1)
 			{
 				ToggleSaveFlag = 0; // 存储已满，停止自动存储
@@ -284,7 +284,7 @@ int Menu2_Stats(void) // 二级菜单
 		}
 
 		// 持续显示存储状态（仅在状态变化时更新）
-		uint8_t currentState = ToggleSaveFlag ? 1 : (DataStorage_New_GetCount() >= DataStorage_New_GetMaxCount() ? 2 : 0);
+		uint8_t currentState = ToggleSaveFlag ? 1 : (DataStorage_GetCount() >= DataStorage_GetMaxCount() ? 2 : 0);
 		if (currentState != lastStorageState)
 		{
 			if (currentState == 1)
@@ -407,7 +407,7 @@ int Menu2_Setting(void)
 
 	LCD_ShowNum(72, 80, LightValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	LCD_ShowSignedNum(72, 100, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
-	LCD_ShowNum(72, 120, DataStorage_New_GetMaxCount(), LCD_8X16, BLACK, WHITE, 0, 0, 0);
+	LCD_ShowNum(72, 120, DataStorage_GetMaxCount(), LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	LCD_ShowNum(72, 140, StepLength, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 
 	lastSetFlag = 1;
@@ -427,7 +427,7 @@ int Menu2_Setting(void)
 			// 读取实时传感器数据
 			float tempData = DS18B20_Get_Temp();
 			uint16_t lightData = LDR_LuxData();
-			uint8_t saveResult = DataStorage_New_Save(tempData, lightData, &CurrentTime);
+			uint8_t saveResult = DataStorage_Save(tempData, lightData, &CurrentTime);
 			if (saveResult == 1)
 			{
 				ToggleSaveFlag = 0; // 存储已满，停止自动存储
@@ -605,7 +605,7 @@ int Menu2_Function(void)
 			// 读取实时传感器数据
 			float tempData = DS18B20_Get_Temp();
 			uint16_t lightData = LDR_LuxData();
-			uint8_t saveResult = DataStorage_New_Save(tempData, lightData, &CurrentTime);
+			uint8_t saveResult = DataStorage_Save(tempData, lightData, &CurrentTime);
 			if (saveResult == 1)
 			{
 				ToggleSaveFlag = 0; // 存储已满,停止自动存储
@@ -825,7 +825,7 @@ int Menu2_History(void)
 	uint8_t lastHisFlag = 0;		 // 记录上次的菜单项
 	uint8_t lastRecordCount = 0;	 // 记录上次显示的记录数
 	uint8_t lastStorageState = 0xFF; // 记录上次存储状态（0xFF=初始化）
-	NowTotalRecords = DataStorage_New_GetCount();
+	NowTotalRecords = DataStorage_GetCount();
 	lastRecordCount = NowTotalRecords;
 	LCD_Clear(WHITE);
 	LCD_ShowChinese(0, 0, "历史数据", LCD_16X16, BLACK, WHITE, 1);
@@ -835,7 +835,7 @@ int Menu2_History(void)
 	LCD_ShowChinese(0, 80, "擦除数据", LCD_16X16, BLACK, WHITE, 0);
 	LCD_ShowChinese(0, 100, "记录数", LCD_16X16, BLACK, WHITE, 0);
 	LCD_ShowString(88, 100, "/", LCD_8X16, BLACK, WHITE, 0);
-	LCD_ShowNum(96, 100, DataStorage_New_GetMaxCount(), LCD_8X16, BLACK, WHITE, 0, 1, 3);
+	LCD_ShowNum(96, 100, DataStorage_GetMaxCount(), LCD_8X16, BLACK, WHITE, 0, 1, 3);
 	LCD_ShowNum(64, 100, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 1, 3);
 	lastHisFlag = 1; // 记录初始高亮项
 	while (1)
@@ -854,13 +854,13 @@ int Menu2_History(void)
 			// 读取实时传感器数据
 			float tempData = DS18B20_Get_Temp();
 			uint16_t lightData = LDR_LuxData();
-			uint8_t saveResult = DataStorage_New_Save(tempData, lightData, &CurrentTime);
+			uint8_t saveResult = DataStorage_Save(tempData, lightData, &CurrentTime);
 			if (saveResult == 1)
 			{
 				ToggleSaveFlag = 0; // 存储已满，停止自动存储
 			}
 			// 存储后更新记录数
-			NowTotalRecords = DataStorage_New_GetCount();
+			NowTotalRecords = DataStorage_GetCount();
 			if (NowTotalRecords != lastRecordCount)
 			{
 				LCD_ShowNum(64, 100, NowTotalRecords, LCD_8X16, BLACK, WHITE, 0, 1, 3);
@@ -1167,7 +1167,7 @@ int Menu3_SetLight(void)
 
 	LCD_ShowNum(72, 80, LightValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	LCD_ShowSignedNum(72, 100, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
-	LCD_ShowNum(72, 120, DataStorage_New_GetMaxCount(), LCD_8X16, BLACK, WHITE, 0, 0, 0);
+	LCD_ShowNum(72, 120, DataStorage_GetMaxCount(), LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	LCD_ShowNum(72, 140, StepLength, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 
 	LCD_ShowString(64, 80, ">", LCD_8X16, WHITE, BLACK, 0);
@@ -1223,7 +1223,7 @@ int Menu3_SetTemp(void)
 
 	LCD_ShowNum(72, 80, LightValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	LCD_ShowSignedNum(72, 100, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
-	LCD_ShowNum(72, 120, DataStorage_New_GetMaxCount(), LCD_8X16, BLACK, WHITE, 0, 0, 0);
+	LCD_ShowNum(72, 120, DataStorage_GetMaxCount(), LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	LCD_ShowNum(72, 140, StepLength, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 
 	LCD_ShowString(64, 100, ">", LCD_8X16, WHITE, BLACK, 0);
@@ -1279,7 +1279,7 @@ int Menu3_SetLength(void)
 
 	LCD_ShowNum(72, 80, LightValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	LCD_ShowSignedNum(72, 100, TempValue, LCD_8X16, BLACK, WHITE, 0, 0, 0);
-	LCD_ShowNum(72, 120, DataStorage_New_GetMaxCount(), LCD_8X16, BLACK, WHITE, 0, 0, 0);
+	LCD_ShowNum(72, 120, DataStorage_GetMaxCount(), LCD_8X16, BLACK, WHITE, 0, 0, 0);
 	LCD_ShowNum(72, 140, StepLength, LCD_8X16, BLACK, WHITE, 0, 0, 0);
 
 	LCD_ShowString(64, 140, ">", LCD_8X16, WHITE, BLACK, 0);
@@ -1454,7 +1454,7 @@ int Menu3_AutoSaveSet(void)
 			CurrentTime.Second = MyRTC_Time[5];
 			Temp = DS18B20_Get_Temp();
 			Light = LDR_LuxData();
-			uint8_t saveResult = DataStorage_New_Save(Temp, Light, &CurrentTime);
+			uint8_t saveResult = DataStorage_Save(Temp, Light, &CurrentTime);
 			if (saveResult == 1)
 			{
 				ToggleSaveFlag = 0; // 存储已满，停止自动存储
@@ -1471,7 +1471,7 @@ int Menu3_ReadRecord(void)
 	uint8_t ReadRecordFlag = 1;
 	uint8_t Menu3_ReadRecordFlag = 0;
 	uint8_t RefreshFlag = 1;
-	NowTotalRecords = DataStorage_New_GetCount();
+	NowTotalRecords = DataStorage_GetCount();
 	if (NowTotalRecords == 0)
 	{
 		LCD_Clear(WHITE);
@@ -1491,7 +1491,7 @@ int Menu3_ReadRecord(void)
 	while (1)
 	{
 		IWDG_Feed();
-		NowTotalRecords = DataStorage_New_GetCount();
+		NowTotalRecords = DataStorage_GetCount();
 		if (Encoder_Check(ENCODER_CW))
 		{
 			if (ShowRecordID > 0)
@@ -1590,7 +1590,7 @@ int Menu3_ChipErase(void)
 
 int Menu3_SetMaxRecord(void)
 {
-	uint8_t tempMax = DataStorage_New_GetMaxCount();
+	uint8_t tempMax = DataStorage_GetMaxCount();
 	uint8_t lastTempMax = 0;
 
 	LCD_Clear(WHITE);
@@ -1632,7 +1632,7 @@ int Menu3_SetMaxRecord(void)
 			}
 			if (Encoder_Check(ENCODER_BTN_SINGLE))
 			{
-				DataStorage_New_SetMaxCount(tempMax);
+				DataStorage_SetMaxCount(tempMax);
 				LCD_Clear(WHITE);
 				return 0;
 			}
@@ -1651,8 +1651,8 @@ int Menu4_Erase(void)
 {
 	LCD_Clear(WHITE);
 	LCD_ShowChinese(0, 40, "擦除中...", LCD_16X16, RED, WHITE, 1);
-	DataStorage_New_EraseAll();
-	NowTotalRecords = DataStorage_New_GetCount();
+	DataStorage_EraseAll();
+	NowTotalRecords = DataStorage_GetCount();
 	Delay_s(MENU_DELAY_ERASE_SEC);
 	LCD_Clear(WHITE);
 	return 0;
@@ -1809,7 +1809,7 @@ int Menu3_StopWatch(void)
 
 int Menu3_ShowGraph(void)
 {
-	uint8_t totalRecords = DataStorage_New_GetCount();
+	uint8_t totalRecords = DataStorage_GetCount();
 
 	LCD_Clear(WHITE);
 	// 如果没有记录，显示提示信息并退出
@@ -1930,7 +1930,7 @@ void DrawStorageChart(uint8_t chartType, int16_t offset, uint8_t totalRecords, u
 
 	// 读取数据并计算最大最小值
 	int16_t dataMax = -32768, dataMin = 32767;
-	SensorData_New SensorData_New;
+	SensorData SensorData;
 
 	// 第一遍扫描：找出最大最小值
 	for (uint8_t i = 0; i < displayCount; i++)
@@ -1940,16 +1940,16 @@ void DrawStorageChart(uint8_t chartType, int16_t offset, uint8_t totalRecords, u
 
 		uint8_t index = offset + i; // 记录索引从0开始
 
-		if (DataStorage_New_Read(index, &SensorData_New) == 0)
+		if (DataStorage_Read(index, &SensorData) == 0)
 		{
 			int16_t value;
 			if (chartType == 0)
 			{
-				value = SensorData_New.Temp; // 温度值已经×10
+				value = SensorData.Temp; // 温度值已经×10
 			}
 			else
 			{
-				value = (int16_t)SensorData_New.Light;
+				value = (int16_t)SensorData.Light;
 			}
 
 			if (value > dataMax)
@@ -2038,16 +2038,16 @@ void DrawStorageChart(uint8_t chartType, int16_t offset, uint8_t totalRecords, u
 	{
 		uint8_t index = offset + i; // 记录索引从0开始
 
-		if (DataStorage_New_Read(index, &SensorData_New) == 0)
+		if (DataStorage_Read(index, &SensorData) == 0)
 		{
 			int16_t value;
 			if (chartType == 0)
 			{
-				value = SensorData_New.Temp;
+				value = SensorData.Temp;
 			}
 			else
 			{
-				value = (int16_t)SensorData_New.Light;
+				value = (int16_t)SensorData.Light;
 			}
 
 			// 计算坐标（使用更新后的dataRange）
@@ -2097,8 +2097,8 @@ int Menu4_ToggleSave(void)
 			if (ToggleSaveFlag == 0)
 			{
 				// 检查存储是否已满
-				uint8_t currentCount = DataStorage_New_GetCount();
-				if (currentCount >= DataStorage_New_GetMaxCount())
+				uint8_t currentCount = DataStorage_GetCount();
+				if (currentCount >= DataStorage_GetMaxCount())
 				{
 					showWarning = 1; // 显示警告
 				}
@@ -2120,8 +2120,8 @@ int Menu4_ToggleSave(void)
 			if (ToggleSaveFlag == 0)
 			{
 				// 检查存储是否已满
-				uint8_t currentCount = DataStorage_New_GetCount();
-				if (currentCount >= DataStorage_New_GetMaxCount())
+				uint8_t currentCount = DataStorage_GetCount();
+				if (currentCount >= DataStorage_GetMaxCount())
 				{
 					showWarning = 1; // 显示警告
 				}
@@ -2354,8 +2354,8 @@ int Menu4_SaveInterval(void)
 
 void LCD_ShowRecord(uint8_t RecordID)
 {
-	SensorData_New record;
-	NowTotalRecords = DataStorage_New_GetCount();
+	SensorData record;
+	NowTotalRecords = DataStorage_GetCount();
 	if (RecordID >= NowTotalRecords)
 	{
 		LCD_ShowChinese(32, 120, "无记录", LCD_16X16, BLACK, WHITE, 0);
@@ -2363,7 +2363,7 @@ void LCD_ShowRecord(uint8_t RecordID)
 	}
 
 	// 读取记录并检查是否成功
-	if (DataStorage_New_Read(RecordID, &record) != 0)
+	if (DataStorage_Read(RecordID, &record) != 0)
 	{
 		LCD_ShowChinese(32, 120, "读取错误", LCD_16X16, RED, WHITE, 0);
 		return;

@@ -6,7 +6,7 @@
 void MY_NVIC_SetVectorTable(u32 NVIC_VectTab, u32 Offset)
 {
 	SCB->VTOR = NVIC_VectTab | (Offset & (u32)0x1FFFFF80); // 设置NVIC的向量表偏移寄存器
-	// 用于标识向量表是在CODE区还是在RAM区
+														   // 用于标识向量表是在CODE区还是在RAM区
 }
 // 设置NVIC分组
 // NVIC_Group:NVIC分组 0~4 总共5组
@@ -96,7 +96,7 @@ void MYRCC_DeInit(void)
 	RCC->CR &= 0xFFFBFFFF;	 // 复位HSEBYP
 	RCC->CFGR &= 0xFF80FFFF; // 复位PLLSRC, PLLXTPRE, PLLMUL[3:0] and USBPRE
 	RCC->CIR = 0x00000000;	 // 关闭所有中断
-	// 配置向量表
+							 // 配置向量表
 #ifdef VECT_TAB_RAM
 	MY_NVIC_SetVectorTable(NVIC_VectTab_RAM, 0x0);
 #else
